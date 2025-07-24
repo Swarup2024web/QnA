@@ -5,44 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Swarup QnA</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
+
   <!-- Header -->
   <header class="header">
-    <h1 class="site-title">Swarup QnA</h1>
+    <h1>Swarup QnA</h1>
     <div class="search-container">
       <input type="text" id="searchInput" placeholder="Search questions..." />
       <i class="fas fa-search"></i>
     </div>
   </header>
 
-  <!-- Navigation -->
+  <!-- Navigation Bar -->
   <nav class="nav-icons">
-    <a href="index.html"><i class="fas fa-home"></i> Home</a>
-    <a href="notes.html"><i class="fas fa-sticky-note"></i> Notes</a>
-    <a href="tests.html"><i class="fas fa-pen-alt"></i> Tests</a>
+    <a href="index.html"><i class="fas fa-home"></i></a>
+    <a href="notes.html"><i class="fas fa-book"></i></a>
+    <a href="tests.html"><i class="fas fa-pen"></i></a>
   </nav>
 
-  <!-- Filter Row -->
-  <section class="filters-row">
+  <!-- Filter Section -->
+  <section class="filter-row">
     <select id="classFilter">
-      <option value="">Class</option>
+      <option value="">Select Class</option>
     </select>
     <select id="subjectFilter">
-      <option value="">Subject</option>
+      <option value="">Select Subject</option>
     </select>
     <select id="chapterFilter">
-      <option value="">Chapter</option>
+      <option value="">Select Chapter</option>
     </select>
     <select id="marksFilter">
-      <option value="">Marks</option>
+      <option value="">Select Marks</option>
     </select>
   </section>
 
-  <!-- Questions Container -->
-  <main id="questionList" class="question-container">
-    <!-- Dynamic Question Cards Will Be Injected Here -->
+  <!-- Questions Display -->
+  <main id="questionContainer" class="question-container">
+    <!-- Questions will be populated here via JavaScript -->
   </main>
 
   <script src="script.js"></script>
