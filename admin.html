@@ -3,93 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel - QnA Site</title>
+  <title>Admin Panel - QnA Uploader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"/>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f0f4f8;
+      font-family: 'Roboto', sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
     }
-
-    h1 {
+    h2 {
       text-align: center;
+      margin-bottom: 20px;
       color: #333;
     }
-
-    .form-container {
-      max-width: 700px;
-      margin: 0 auto;
+    .container {
+      max-width: 1000px;
+      margin: auto;
       background: #fff;
-      padding: 2rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      border-radius: 10px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow-x: auto;
     }
-
-    input, textarea, button {
+    table {
       width: 100%;
-      padding: 12px;
-      margin: 12px 0;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+    th {
+      background: #333;
+      color: #fff;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
     }
-
-    button {
-      background-color: #007bff;
+    textarea {
+      resize: vertical;
+    }
+    .btn {
+      background: #007bff;
       color: white;
+      padding: 10px 18px;
       border: none;
+      border-radius: 6px;
       cursor: pointer;
-      transition: 0.3s;
+      margin-right: 10px;
     }
-
-    button:hover {
-      background-color: #0056b3;
+    .btn:hover {
+      background: #0056b3;
     }
-
-    label {
-      font-weight: bold;
+    .btn-row {
+      text-align: center;
       margin-top: 10px;
-      display: block;
-    }
-
-    .status {
-      margin-top: 10px;
-      font-weight: bold;
-      color: green;
     }
   </style>
 </head>
 <body>
-
-  <h1>Admin Panel - Add QnA</h1>
-
-  <div class="form-container">
-    <label for="classInput">Class</label>
-    <input type="text" id="classInput" placeholder="Enter class (e.g. 10)" required />
-
-    <label for="subjectInput">Subject</label>
-    <input type="text" id="subjectInput" placeholder="Enter subject (e.g. English)" required />
-
-    <label for="chapterInput">Chapter</label>
-    <input type="text" id="chapterInput" placeholder="Enter chapter (e.g. Poetry 1)" required />
-
-    <label for="marksInput">Marks</label>
-    <input type="number" id="marksInput" placeholder="Enter marks (e.g. 5)" required />
-
-    <label for="questionInput">Question</label>
-    <textarea id="questionInput" placeholder="Enter the question" rows="3" required></textarea>
-
-    <label for="answerInput">Answer</label>
-    <textarea id="answerInput" placeholder="Enter the answer" rows="5" required></textarea>
-
-    <button onclick="addQnA()">Add QnA</button>
-    <div class="status" id="statusMsg"></div>
+  <h2>Admin Panel - Add Multiple QnAs</h2>
+  <div class="container">
+    <table id="qnaTable">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th>Subject</th>
+          <th>Chapter</th>
+          <th>Marks</th>
+          <th>Question</th>
+          <th>Answer</th>
+        </tr>
+      </thead>
+      <tbody id="qnaBody">
+        <!-- Rows will be added dynamically -->
+      </tbody>
+    </table>
+    <div class="btn-row">
+      <button class="btn" onclick="addRow()">➕ Add Row</button>
+      <button class="btn" onclick="uploadData()">📤 Upload to Firebase</button>
+    </div>
   </div>
 
-  <!-- Firebase libraries -->
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
@@ -103,50 +107,60 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    window.addQnA = async function () {
-      const classInput = document.getElementById("classInput").value.trim();
-      const subject = document.getElementById("subjectInput").value.trim();
-      const chapter = document.getElementById("chapterInput").value.trim();
-      const marks = parseInt(document.getElementById("marksInput").value.trim());
-      const question = document.getElementById("questionInput").value.trim();
-      const answer = document.getElementById("answerInput").value.trim();
+    // Add initial row
+    window.onload = () => addRow();
 
-      const statusMsg = document.getElementById("statusMsg");
+    // Add a new row to the table
+    window.addRow = function () {
+      const tbody = document.getElementById("qnaBody");
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input type="text" class="class" placeholder="Ex: 10" /></td>
+        <td><input type="text" class="subject" placeholder="Ex: English" /></td>
+        <td><input type="text" class="chapter" placeholder="Ex: Poem 3" /></td>
+        <td><input type="number" class="marks" placeholder="Ex: 5" /></td>
+        <td><textarea class="question" placeholder="Write the question..."></textarea></td>
+        <td><textarea class="answer" placeholder="Write the answer..."></textarea></td>
+      `;
+      tbody.appendChild(row);
+    }
 
-      if (!classInput || !subject || !chapter || !marks || !question || !answer) {
-        statusMsg.textContent = "Please fill in all fields!";
-        statusMsg.style.color = "red";
-        return;
+    // Upload all QnAs to Firebase
+    window.uploadData = async function () {
+      const rows = document.querySelectorAll("#qnaBody tr");
+      let successCount = 0;
+
+      for (const row of rows) {
+        const classVal = row.querySelector(".class").value.trim();
+        const subject = row.querySelector(".subject").value.trim();
+        const chapter = row.querySelector(".chapter").value.trim();
+        const marks = parseInt(row.querySelector(".marks").value.trim());
+        const question = row.querySelector(".question").value.trim();
+        const answer = row.querySelector(".answer").value.trim();
+
+        if (!classVal || !subject || !chapter || !question || !answer || isNaN(marks)) {
+          alert("Fill all fields correctly before uploading.");
+          return;
+        }
+
+        try {
+          await addDoc(collection(db, "questions"), {
+            class: classVal,
+            subject,
+            chapter,
+            marks,
+            question,
+            answer,
+            time: serverTimestamp()
+          });
+          successCount++;
+        } catch (error) {
+          console.error("Error uploading QnA:", error);
+        }
       }
 
-      try {
-        await addDoc(collection(db, "questions"), {
-          class: classInput,
-          subject: subject,
-          chapter: chapter,
-          marks: marks,
-          question: question,
-          answer: answer,
-          time: new Date().toISOString()
-        });
-
-        statusMsg.textContent = "QnA added successfully!";
-        statusMsg.style.color = "green";
-
-        // Clear form
-        document.getElementById("classInput").value = "";
-        document.getElementById("subjectInput").value = "";
-        document.getElementById("chapterInput").value = "";
-        document.getElementById("marksInput").value = "";
-        document.getElementById("questionInput").value = "";
-        document.getElementById("answerInput").value = "";
-
-      } catch (error) {
-        console.error("Error adding QnA:", error);
-        statusMsg.textContent = "Failed to add QnA. Check console.";
-        statusMsg.style.color = "red";
-      }
-    };
+      alert(`${successCount} QnA(s) uploaded successfully.`);
+    }
   </script>
 </body>
 </html>
