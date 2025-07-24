@@ -3,78 +3,199 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Swarup QnA</title>
+  <title>QnA Reader - SWARUP SIR</title>
 
-  <!-- Font Awesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="FirebaseConfig.js"></script>
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="style.css"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #eef3f9;
+    }
+
+    header {
+      background: #0077cc;
+      color: white;
+      text-align: center;
+      padding: 20px 0;
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      background: #004d99;
+      padding: 10px 0;
+    }
+
+    nav i {
+      color: white;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .filter-section {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      background: #ffffff;
+    }
+
+    select, button {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      min-width: 150px;
+    }
+
+    button {
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    .qna-container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 10px;
+    }
+
+    .qna-card {
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-left: 5px solid #0077cc;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .qna-card h3 {
+      margin: 0 0 10px;
+      color: #333;
+    }
+
+    .qna-card p {
+      margin: 5px 0;
+    }
+
+    .qna-meta {
+      font-size: 0.9rem;
+      color: #777;
+    }
+
+    @media (max-width: 600px) {
+      select, button {
+        min-width: 120px;
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+
+  <!-- Font Awesome for icons -->
+  <script src="https://kit.fontawesome.com/a2e0e6ea6c.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="main-header">
-    <div class="header-left">
-      <h1 class="site-title">Swarup QnA</h1>
-    </div>
-    
-    <div class="header-center">
-      <input type="text" id="searchInput" placeholder="Search questions..." />
-      <button onclick="performSearch()"><i class="fas fa-search"></i></button>
-    </div>
+  <header>SWARUP SIR QnA</header>
 
-    <div class="header-right">
-      <a href="index.html" class="active" title="Home"><i class="fas fa-home"></i></a>
-      <a href="notes.html" title="Notes"><i class="fas fa-book"></i></a>
-      <a href="tests.html" title="Tests"><i class="fas fa-file-alt"></i></a>
-    </div>
-  </header>
+  <nav>
+    <i class="fas fa-home" title="Home"></i>
+    <i class="fas fa-file-alt" title="Notes"></i>
+    <i class="fas fa-vial" title="Test"></i>
+  </nav>
 
-  <!-- FILTER SECTION -->
   <section class="filter-section">
-    <div class="filter-group">
-      <label for="classFilter">Class:</label>
-      <select id="classFilter" onchange="updateSubjects()">
-        <option value="">All</option>
-        <!-- Options will be dynamically added -->
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="subjectFilter">Subject:</label>
-      <select id="subjectFilter" onchange="updateChapters()">
-        <option value="">All</option>
-        <!-- Options will be dynamically added -->
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="chapterFilter">Chapter:</label>
-      <select id="chapterFilter">
-        <option value="">All</option>
-        <!-- Options will be dynamically added -->
-      </select>
-    </div>
-
-    <div class="filter-group">
-      <label for="marksFilter">Marks:</label>
-      <select id="marksFilter">
-        <option value="">All</option>
-        <!-- Options will be dynamically added -->
-      </select>
-    </div>
+    <select id="classFilter"><option value="">Class</option></select>
+    <select id="subjectFilter"><option value="">Subject</option></select>
+    <select id="chapterFilter"><option value="">Chapter</option></select>
+    <select id="marksFilter"><option value="">Marks</option></select>
+    <button onclick="loadQuestions()">Show</button>
   </section>
 
-  <!-- MAIN QUESTIONS DISPLAY -->
-  <main>
-    <div id="questionsContainer" class="questions-container">
-      <p id="noDataMessage" class="no-data" style="display: none;">No questions found. Try again.</p>
-      <!-- Questions will appear here dynamically -->
-    </div>
-  </main>
+  <section class="qna-container" id="qnaContainer">
+    <!-- Questions will appear here -->
+  </section>
 
-  <!-- JS Script -->
-  <script src="script.js"></script>
+  <script>
+    const db = firebase.firestore();
+
+    // Populate dropdowns (in real use, you'd fetch from DB or use static)
+    const classes = ["6", "7", "8", "9", "10"];
+    const subjects = ["English", "Math", "Science"];
+    const chapters = ["1", "2", "3", "4"];
+    const marksOptions = ["1", "2", "3", "5", "10"];
+
+    function populateDropdown(id, list) {
+      const dropdown = document.getElementById(id);
+      list.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item;
+        opt.textContent = item;
+        dropdown.appendChild(opt);
+      });
+    }
+
+    populateDropdown("classFilter", classes);
+    populateDropdown("subjectFilter", subjects);
+    populateDropdown("chapterFilter", chapters);
+    populateDropdown("marksFilter", marksOptions);
+
+    async function loadQuestions() {
+      const classVal = document.getElementById('classFilter').value;
+      const subjectVal = document.getElementById('subjectFilter').value;
+      const chapterVal = document.getElementById('chapterFilter').value;
+      const marksVal = document.getElementById('marksFilter').value;
+
+      let query = db.collection('questions');
+
+      if (classVal) query = query.where("class", "==", classVal);
+      if (subjectVal) query = query.where("subject", "==", subjectVal);
+      if (chapterVal) query = query.where("chapter", "==", chapterVal);
+      if (marksVal) query = query.where("marks", "==", parseInt(marksVal));
+
+      const snapshot = await query.orderBy("marks", "asc").get();
+      const container = document.getElementById("qnaContainer");
+      container.innerHTML = "";
+
+      if (snapshot.empty) {
+        container.innerHTML = "<p style='text-align:center;'>No QnA found.</p>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const card = document.createElement("div");
+        card.className = "qna-card";
+        card.innerHTML = `
+          <h3>Q: ${data.question}</h3>
+          <div>A: ${data.answer}</div>
+          <div class="qna-meta">
+            Class: ${data.class} | Subject: ${data.subject} | Chapter: ${data.chapter} | Marks: ${data.marks}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+  </script>
 </body>
 </html>
