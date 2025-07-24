@@ -1,153 +1,130 @@
-/* Global Reset */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
 }
 
+/* Body */
 body {
-  background: linear-gradient(to right, #cfeeff, #e0f7ff);
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #e0f7ff, #c2e9fb);
   min-height: 100vh;
-  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Header */
 .header {
+  background: linear-gradient(to right, #87cefa, #b0e0e6);
+  width: 100%;
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background: #e6f7ff;
-  border-radius: 1rem;
-  box-shadow: 8px 8px 16px #b0d3e0, -8px -8px 16px #ffffff;
-  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.site-title {
-  font-size: 1.5rem;
-  color: #007acc;
+.header h1 {
+  font-size: 1.8rem;
+  color: #004d80;
 }
 
 .search-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  position: relative;
 }
 
 .search-container input {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 2rem 0.5rem 1rem;
   border: none;
-  border-radius: 2rem;
-  background: #d9f1ff;
-  box-shadow: inset 4px 4px 8px #bcdce6, inset -4px -4px 8px #ffffff;
+  border-radius: 20px;
+  background-color: #e6f7ff;
+  color: #004d80;
+  font-size: 1rem;
   outline: none;
+  width: 200px;
 }
 
-/* Nav Icons */
+.search-container i {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #0077b6;
+}
+
+/* Navigation Bar */
 .nav-icons {
+  width: 100%;
   display: flex;
   justify-content: space-around;
-  background: #e6f7ff;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 6px 6px 12px #b0d3e0, -6px -6px 12px #ffffff;
+  background: linear-gradient(to right, #87cefa, #b0e0e6);
+  padding: 0.7rem 0;
 }
 
 .nav-icons a {
+  color: #004d80;
+  font-size: 1.4rem;
   text-decoration: none;
-  color: #007acc;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
-.nav-icons i {
-  font-size: 1.2rem;
-}
-
-/* Filters */
-.filters-row {
+/* Filter Section */
+.filter-row {
+  width: 100%;
+  padding: 1rem;
   display: flex;
-  flex-wrap: wrap;
   gap: 1rem;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
+  justify-content: center;
+  flex-wrap: nowrap;
+  background-color: #f0fbff;
+  border-bottom: 1px solid #b3e0ff;
 }
 
-.filters-row select {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 1rem;
-  background: #d9f1ff;
-  color: #007acc;
-  box-shadow: inset 3px 3px 6px #b0d3e0, inset -3px -3px 6px #ffffff;
-  appearance: none;
+.filter-row select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #b3dffc;
+  border-radius: 8px;
+  background: #dff6ff;
+  color: #004d80;
+  font-size: 1rem;
+  outline: none;
 }
 
-/* Questions */
+/* Question Container */
 .question-container {
-  display: grid;
+  width: 100%;
+  max-width: 900px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
 /* Question Card */
 .question-card {
-  background: #e6f7ff;
-  border-radius: 1.2rem;
+  background: #ffffff;
+  border-left: 5px solid #4fc3f7;
   padding: 1rem;
-  box-shadow: 8px 8px 16px #b0d3e0, -8px -8px 16px #ffffff;
-  transition: 0.3s ease-in-out;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
 }
 
 .question-card:hover {
-  transform: scale(1.01);
+  transform: scale(1.02);
 }
 
-/* Question Header */
-.card-header {
+.question-header {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
+  align-items: center;
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color: #005a99;
-  font-size: 0.95rem;
+  color: #0077b6;
 }
 
-.card-question {
-  margin-bottom: 0.5rem;
-  color: #222;
+.question-text {
   font-size: 1rem;
-}
-
-.card-answer {
-  color: #444;
-  font-size: 0.95rem;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .filters-row {
-    flex-direction: column;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.8rem;
-  }
-
-  .nav-icons {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .card-header {
-    flex-direction: column;
-    gap: 0.3rem;
-  }
+  color: #333;
 }
