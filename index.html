@@ -5,33 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Swarup QnA</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="script.js" defer></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
+  <!-- Header -->
   <header class="header">
-    <h1>Swarup QnA</h1>
-    <nav class="navbar">
-      <a href="index.html" title="Home"><i class="fas fa-home"></i></a>
-      <a href="" title="Notes"><i class="fas fa-book"></i></a>
-      <a href="" title="Tests"><i class="fas fa-clipboard-list"></i></a>
-    </nav>
+    <h1 class="site-title">Swarup QnA</h1>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search questions..." />
+      <i class="fas fa-search"></i>
+    </div>
   </header>
 
-  <section class="filter-row">
-    <select id="classDropdown" onchange="updateSubjects()">
+  <!-- Navigation -->
+  <nav class="nav-icons">
+    <a href="index.html"><i class="fas fa-home"></i> Home</a>
+    <a href="notes.html"><i class="fas fa-sticky-note"></i> Notes</a>
+    <a href="tests.html"><i class="fas fa-pen-alt"></i> Tests</a>
+  </nav>
+
+  <!-- Filter Row -->
+  <section class="filters-row">
+    <select id="classFilter">
       <option value="">Class</option>
     </select>
-    <select id="subjectDropdown" onchange="updateChapters()">
+    <select id="subjectFilter">
       <option value="">Subject</option>
     </select>
-    <select id="chapterDropdown">
+    <select id="chapterFilter">
       <option value="">Chapter</option>
+    </select>
+    <select id="marksFilter">
+      <option value="">Marks</option>
     </select>
   </section>
 
-  <section id="qnaContainer" class="qna-container">
-    <!-- QnA will be dynamically added here -->
-  </section>
+  <!-- Questions Container -->
+  <main id="questionList" class="question-container">
+    <!-- Dynamic Question Cards Will Be Injected Here -->
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
