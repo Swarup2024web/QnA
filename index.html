@@ -4,53 +4,77 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Swarup QnA</title>
-  <link rel="stylesheet" href="style.css"/>
+
+  <!-- Font Awesome for Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- HEADER -->
   <header class="main-header">
-    <div class="header-row site-title">Swarup QnA</div>
-
-    <div class="header-row nav-icons">
-      <a href="index.html" class="active"><i class="fas fa-home"></i></a>
-      <a href="notes.html"><i class="fas fa-book"></i></a>
-      <a href="tests.html"><i class="fas fa-file-alt"></i></a>
+    <div class="header-left">
+      <h1 class="site-title">Swarup QnA</h1>
+    </div>
+    
+    <div class="header-center">
+      <input type="text" id="searchInput" placeholder="Search questions..." />
+      <button onclick="performSearch()"><i class="fas fa-search"></i></button>
     </div>
 
-    <div class="header-row search-container">
-      <input type="text" id="searchInput" placeholder="Search questions...">
-      <button onclick="performSearch()"><i class="fas fa-search"></i></button>
+    <div class="header-right">
+      <a href="index.html" class="active" title="Home"><i class="fas fa-home"></i></a>
+      <a href="notes.html" title="Notes"><i class="fas fa-book"></i></a>
+      <a href="tests.html" title="Tests"><i class="fas fa-file-alt"></i></a>
     </div>
   </header>
 
-  <!-- Filter Section -->
-  <section class="filters">
-    <select id="classFilter" onchange="updateSubjects()">
-      <option value="">Class</option>
-    </select>
+  <!-- FILTER SECTION -->
+  <section class="filter-section">
+    <div class="filter-group">
+      <label for="classFilter">Class:</label>
+      <select id="classFilter" onchange="updateSubjects()">
+        <option value="">All</option>
+        <!-- Options will be dynamically added -->
+      </select>
+    </div>
 
-    <select id="subjectFilter" onchange="updateChapters()">
-      <option value="">Subject</option>
-    </select>
+    <div class="filter-group">
+      <label for="subjectFilter">Subject:</label>
+      <select id="subjectFilter" onchange="updateChapters()">
+        <option value="">All</option>
+        <!-- Options will be dynamically added -->
+      </select>
+    </div>
 
-    <select id="chapterFilter">
-      <option value="">Chapter</option>
-    </select>
+    <div class="filter-group">
+      <label for="chapterFilter">Chapter:</label>
+      <select id="chapterFilter">
+        <option value="">All</option>
+        <!-- Options will be dynamically added -->
+      </select>
+    </div>
 
-    <select id="marksFilter">
-      <option value="">Marks</option>
-    </select>
+    <div class="filter-group">
+      <label for="marksFilter">Marks:</label>
+      <select id="marksFilter">
+        <option value="">All</option>
+        <!-- Options will be dynamically added -->
+      </select>
+    </div>
   </section>
 
-  <!-- Questions Container -->
+  <!-- MAIN QUESTIONS DISPLAY -->
   <main>
     <div id="questionsContainer" class="questions-container">
-      <p id="noDataMessage" class="no-data">Try again</p>
+      <p id="noDataMessage" class="no-data" style="display: none;">No questions found. Try again.</p>
+      <!-- Questions will appear here dynamically -->
     </div>
   </main>
 
+  <!-- JS Script -->
   <script src="script.js"></script>
 </body>
 </html>
