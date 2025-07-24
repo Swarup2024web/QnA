@@ -3,166 +3,140 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
 }
 
+/* Body */
 body {
-  background: linear-gradient(to right, #e0f7fa, #fff3e0);
-  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f4f8;
   color: #333;
-  padding: 0;
+  padding: 10px;
 }
 
 /* Header */
-.main-header {
-  background: linear-gradient(135deg, #00bcd4, #ff9800);
+header {
+  background: linear-gradient(to right, #4facfe, #00f2fe);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
   color: white;
-  padding: 15px 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.header-row {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 5px 0;
+  flex-direction: column;
+  gap: 10px;
 }
 
-/* Title Row */
+/* Title */
 .site-title {
-  font-size: 26px;
-  font-weight: bold;
-  letter-spacing: 1px;
+  font-size: 24px;
+  text-align: center;
 }
 
-/* Navigation Icons */
+/* Nav Icons */
+.nav-icons {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 10px;
+}
+
 .nav-icons a {
-  margin: 0 15px;
   color: white;
   font-size: 20px;
-  transition: transform 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.3s;
 }
 
+.nav-icons a.active,
 .nav-icons a:hover {
-  transform: scale(1.2);
-  color: #ffe082;
-}
-
-.nav-icons a.active {
-  color: #fffde7;
-  font-weight: bold;
-  border-bottom: 2px solid #fffde7;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Search Bar */
-.search-container {
+.search-bar {
+  display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 5px;
 }
 
-.search-container input {
+.search-bar input {
   padding: 8px 12px;
+  border-radius: 20px;
   border: none;
-  border-radius: 20px 0 0 20px;
-  outline: none;
-  width: 200px;
-  max-width: 60%;
+  width: 70%;
+  max-width: 300px;
+  font-size: 16px;
 }
 
-.search-container button {
+.search-bar button {
   padding: 8px 12px;
+  background: white;
   border: none;
-  background: #004d40;
-  color: white;
-  border-radius: 0 20px 20px 0;
+  border-radius: 50%;
   cursor: pointer;
 }
 
-.search-container button:hover {
-  background: #00796b;
+.search-bar i {
+  color: #4facfe;
+  font-size: 16px;
 }
 
-/* Filter Section */
+/* Filters */
 .filters {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  background: #fffde7;
-  padding: 10px;
   gap: 10px;
-  border-bottom: 2px solid #ffcc80;
+  flex-wrap: wrap;
+  margin: 10px 0 20px;
 }
 
 .filters select {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  background-color: #fafafa;
-  cursor: pointer;
+  background: white;
+  font-size: 14px;
+  min-width: 100px;
 }
 
 /* Questions Container */
-.questions-container {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+#questionsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 20px;
 }
 
-/* Question Card */
+/* Card */
 .question-card {
-  background: linear-gradient(145deg, #ffffff, #e0f2f1);
-  border-left: 5px solid #00acc1;
+  background: white;
   padding: 15px;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
 }
 
 .question-card:hover {
   transform: scale(1.02);
-  background: linear-gradient(145deg, #f1f8e9, #e1f5fe);
 }
 
-/* Question and Answer Styling */
-.question-card h4 {
-  margin-bottom: 8px;
-  color: #00796b;
-  font-size: 18px;
-}
-
-.question-card p {
-  color: #444;
+.question-card h3 {
   font-size: 16px;
-  line-height: 1.5;
+  margin-bottom: 10px;
+  color: #333;
 }
 
-/* No Data Message */
-.no-data {
+.question-card .info {
+  font-size: 14px;
+  color: #666;
+  margin-top: 8px;
+}
+
+/* No Data */
+#noData {
   text-align: center;
-  color: #e53935;
-  font-weight: bold;
+  color: #888;
   font-size: 18px;
-  margin-top: 40px;
+  padding: 20px;
 }
-
-/* Responsive */
-@media screen and (max-width: 600px) {
-  .filters {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .search-container {
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .search-container input {
-    width: 80%;
-    border-radius: 20px;
-  }
-
-  .search-container button {
-    border-radius: 20px;
-  }
-  }
