@@ -4,46 +4,51 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Swarup QnA</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
 
   <!-- Header -->
-  <header class="header">
-    <h1>Swarup QnA</h1>
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search questions..." />
-      <i class="fas fa-search"></i>
+  <header class="main-header">
+    <div class="header-row site-title">Swarup QnA</div>
+
+    <div class="header-row nav-icons">
+      <a href="index.html" class="active"><i class="fas fa-home"></i></a>
+      <a href="notes.html"><i class="fas fa-book"></i></a>
+      <a href="tests.html"><i class="fas fa-file-alt"></i></a>
+    </div>
+
+    <div class="header-row search-container">
+      <input type="text" id="searchInput" placeholder="Search questions...">
+      <button onclick="performSearch()"><i class="fas fa-search"></i></button>
     </div>
   </header>
 
-  <!-- Navigation Bar -->
-  <nav class="nav-icons">
-    <a href="index.html"><i class="fas fa-home"></i></a>
-    <a href="notes.html"><i class="fas fa-book"></i></a>
-    <a href="tests.html"><i class="fas fa-pen"></i></a>
-  </nav>
-
   <!-- Filter Section -->
-  <section class="filter-row">
-    <select id="classFilter">
-      <option value="">Select Class</option>
+  <section class="filters">
+    <select id="classFilter" onchange="updateSubjects()">
+      <option value="">Class</option>
     </select>
-    <select id="subjectFilter">
-      <option value="">Select Subject</option>
+
+    <select id="subjectFilter" onchange="updateChapters()">
+      <option value="">Subject</option>
     </select>
+
     <select id="chapterFilter">
-      <option value="">Select Chapter</option>
+      <option value="">Chapter</option>
     </select>
+
     <select id="marksFilter">
-      <option value="">Select Marks</option>
+      <option value="">Marks</option>
     </select>
   </section>
 
-  <!-- Questions Display -->
-  <main id="questionContainer" class="question-container">
-    <!-- Questions will be populated here via JavaScript -->
+  <!-- Questions Container -->
+  <main>
+    <div id="questionsContainer" class="questions-container">
+      <p id="noDataMessage" class="no-data">Try again</p>
+    </div>
   </main>
 
   <script src="script.js"></script>
