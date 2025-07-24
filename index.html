@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Swarup QnA</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    nav a {
+      color: white;
+      margin-left: 20px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    nav a i {
+      margin-right: 6px;
+    }
+
+    .filters {
+      padding: 20px;
+      background: white;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .filters select {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .qna-container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .qna-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+    }
+
+    .qna-card h3 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .qna-card p {
+      margin: 8px 0 0;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Swarup QnA</h1>
+    <nav>
+      <a href="#"><i class="fas fa-home"></i>Home</a>
+      <a href="#"><i class="fas fa-book"></i>Notes</a>
+      <a href="#"><i class="fas fa-pen-alt"></i>Tests</a>
+    </nav>
+  </header>
+
+  <div class="filters">
+    <select id="classSelect">
+      <option value="">Select Class</option>
+    </select>
+
+    <select id="subjectSelect" disabled>
+      <option value="">Select Subject</option>
+    </select>
+
+    <select id="chapterSelect" disabled>
+      <option value="">Select Chapter</option>
+    </select>
+  </div>
+
+  <div class="qna-container" id="qnaContainer">
+    <!-- QnAs will be displayed here -->
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
