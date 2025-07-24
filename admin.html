@@ -1,162 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel - QnA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
     body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
       margin: 0;
-      padding: 20px;
-      background: #f9f9f9;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
+      padding: 0;
     }
 
     .container {
       max-width: 600px;
-      margin: auto;
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin: 40px auto;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
     }
 
     label {
       display: block;
       margin-top: 15px;
-      margin-bottom: 5px;
-      font-weight: 500;
+      font-weight: bold;
     }
 
     input, textarea {
       width: 100%;
       padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
+      font-size: 16px;
     }
 
     button {
       margin-top: 20px;
       width: 100%;
-      background: #007bff;
-      color: #fff;
+      background-color: #007BFF;
+      color: white;
       padding: 12px;
       border: none;
-      border-radius: 8px;
+      border-radius: 5px;
       font-size: 16px;
       cursor: pointer;
     }
 
     button:hover {
-      background: #0056b3;
-    }
-
-    .message {
-      margin-top: 15px;
-      text-align: center;
-      color: green;
+      background-color: #0056b3;
     }
 
     @media (max-width: 600px) {
       .container {
-        padding: 20px;
+        margin: 20px;
       }
     }
   </style>
 </head>
 <body>
-
-  <h1>Admin Panel - Add QnA</h1>
   <div class="container">
-    <label for="class">Class</label>
-    <input type="text" id="class" placeholder="e.g., 10">
+    <h2>Admin Panel - Add QnA</h2>
 
-    <label for="subject">Subject</label>
-    <input type="text" id="subject" placeholder="e.g., English">
+    <label for="classInput">Class</label>
+    <input type="text" id="classInput" placeholder="e.g., 10" />
 
-    <label for="chapter">Chapter</label>
-    <input type="text" id="chapter" placeholder="e.g., Chapter 5">
+    <label for="subjectInput">Subject</label>
+    <input type="text" id="subjectInput" placeholder="e.g., Science" />
 
-    <label for="marks">Marks</label>
-    <input type="number" id="marks" placeholder="e.g., 5">
+    <label for="chapterInput">Chapter</label>
+    <input type="text" id="chapterInput" placeholder="e.g., Light" />
 
-    <label for="question">Question</label>
-    <textarea id="question" placeholder="Write the question here"></textarea>
+    <label for="marksInput">Marks</label>
+    <input type="number" id="marksInput" placeholder="e.g., 5" />
 
-    <label for="answer">Answer</label>
-    <textarea id="answer" placeholder="Write the answer here"></textarea>
+    <label for="questionInput">Question</label>
+    <textarea id="questionInput" rows="4" placeholder="Type the question here..."></textarea>
+
+    <label for="answerInput">Answer</label>
+    <textarea id="answerInput" rows="6" placeholder="Type the answer here..."></textarea>
 
     <button id="addBtn">Add QnA</button>
-
-    <div class="message" id="messageBox"></div>
   </div>
 
+  <!-- Firebase and logic -->
   <script type="module">
     import { db } from './FirebaseConfig.js';
     import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
 
-    const addBtn = document.getElementById('addBtn');
-    const messageBox = document.getElementById('messageBox');
+    document.getElementById('addBtn').addEventListener('click', async () => {
+      const classVal = document.getElementById('classInput').value.trim();
+      const subjectVal = document.getElementById('subjectInput').value.trim();
+      const chapterVal = document.getElementById('chapterInput').value.trim();
+      const marksVal = parseInt(document.getElementById('marksInput').value.trim());
+      const questionVal = document.getElementById('questionInput').value.trim();
+      const answerVal = document.getElementById('answerInput').value.trim();
 
-    addBtn.addEventListener('click', async () => {
-      const classVal = document.getElementById('class').value.trim();
-      const subject = document.getElementById('subject').value.trim();
-      const chapter = document.getElementById('chapter').value.trim();
-      const marks = parseInt(document.getElementById('marks').value.trim());
-      const question = document.getElementById('question').value.trim();
-      const answer = document.getElementById('answer').value.trim();
-
-      if (!classVal || !subject || !chapter || !question || !answer || isNaN(marks)) {
-        messageBox.style.color = "red";
-        messageBox.textContent = "Please fill in all fields correctly.";
+      if (!classVal || !subjectVal || !chapterVal || !questionVal || !answerVal || isNaN(marksVal)) {
+        alert("Please fill all fields correctly.");
         return;
       }
 
       try {
         await addDoc(collection(db, "questions"), {
           class: classVal,
-          subject,
-          chapter,
-          marks,
-          question,
-          answer,
+          subject: subjectVal,
+          chapter: chapterVal,
+          marks: marksVal,
+          question: questionVal,
+          answer: answerVal,
           time: serverTimestamp()
         });
-
-        messageBox.style.color = "green";
-        messageBox.textContent = "QnA added successfully!";
-
+        alert("QnA added successfully!");
         // Clear inputs
-        document.getElementById('class').value = '';
-        document.getElementById('subject').value = '';
-        document.getElementById('chapter').value = '';
-        document.getElementById('marks').value = '';
-        document.getElementById('question').value = '';
-        document.getElementById('answer').value = '';
-
+        document.getElementById('classInput').value = '';
+        document.getElementById('subjectInput').value = '';
+        document.getElementById('chapterInput').value = '';
+        document.getElementById('marksInput').value = '';
+        document.getElementById('questionInput').value = '';
+        document.getElementById('answerInput').value = '';
       } catch (error) {
-        console.error("Error adding document: ", error);
-        messageBox.style.color = "red";
-        messageBox.textContent = "Error adding QnA. Check console.";
+        console.error("Error adding QnA:", error);
+        alert("Failed to add QnA. Check console for details.");
       }
     });
   </script>
-
 </body>
 </html>
