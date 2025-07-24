@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel - Swarup QnA</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    select, textarea, input[type="text"], button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #2c3e50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #34495e;
+    }
+
+    .msg {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2><i class="fas fa-user-shield"></i> Admin - Add QnA</h2>
+
+    <label for="classInput">Class</label>
+    <input type="text" id="classInput" placeholder="e.g., 10" />
+
+    <label for="subjectInput">Subject</label>
+    <input type="text" id="subjectInput" placeholder="e.g., Science" />
+
+    <label for="chapterInput">Chapter</label>
+    <input type="text" id="chapterInput" placeholder="e.g., Light" />
+
+    <label for="questionInput">Question</label>
+    <textarea id="questionInput" rows="3" placeholder="Enter the question"></textarea>
+
+    <label for="answerInput">Answer</label>
+    <textarea id="answerInput" rows="4" placeholder="Enter the answer"></textarea>
+
+    <button onclick="addQnA()">Add QnA</button>
+
+    <div class="msg" id="msgBox"></div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+  <script>
+    // TODO: Replace this with your Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function showMessage(msg, color = 'green') {
+      const box = document.getElementById("msgBox");
+      box.style.color = color;
+      box.innerText = msg;
+      setTimeout(() => box.innerText = "", 4000);
+    }
+
+    function addQnA() {
+      const cls = document.getElementById("classInput").value.trim();
+      const subject = document.getElementById("subjectInput").value.trim();
+      const chapter = document.getElementById("chapterInput").value.trim();
+      const question = document.getElementById("questionInput").value.trim();
+      const answer = document.getElementById("answerInput").value.trim();
+
+      if (!cls || !subject || !chapter || !question || !answer) {
+        showMessage("Please fill in all fields!", "red");
+        return;
+      }
+
+      db.collection("qna").add({
+        class: cls,
+        subject: subject,
+        chapter: chapter,
+        question: question,
+        answer: answer,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        showMessage("QnA added successfully!");
+        document.getElementById("classInput").value = "";
+        document.getElementById("subjectInput").value = "";
+        document.getElementById("chapterInput").value = "";
+        document.getElementById("questionInput").value = "";
+        document.getElementById("answerInput").value = "";
+      })
+      .catch(error => {
+        console.error("Error adding QnA: ", error);
+        showMessage("Failed to add QnA!", "red");
+      });
+    }
+  </script>
+</body>
+</html>
