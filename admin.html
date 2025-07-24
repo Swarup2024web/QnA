@@ -1,246 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Admin Panel - QnA</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
     body {
-      font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 20px;
-      background: #f4f4f4;
+      background: #f9f9f9;
     }
 
     h1 {
       text-align: center;
-      color: #2c3e50;
+      margin-bottom: 20px;
+      color: #333;
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 600px;
       margin: auto;
-    }
-
-    .form-section, .bulk-section {
       background: #fff;
-      padding: 20px;
-      margin-bottom: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 15px;
-    }
-
-    .form-group label {
-      font-weight: bold;
+    label {
+      display: block;
+      margin-top: 15px;
       margin-bottom: 5px;
+      font-weight: 500;
     }
 
-    .form-group input, .form-group textarea {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-
-    .form-group textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .btn {
-      padding: 12px 20px;
-      border: none;
-      background-color: #3498db;
-      color: white;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-      width: fit-content;
-    }
-
-    .btn:hover {
-      background-color: #2980b9;
-    }
-
-    table {
+    input, textarea {
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    table, th, td {
-      border: 1px solid #ccc;
-    }
-
-    th, td {
       padding: 10px;
-      text-align: left;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
     }
 
-    th {
-      background: #ecf0f1;
+    textarea {
+      resize: vertical;
+      min-height: 80px;
     }
 
-    @media (max-width: 768px) {
-      .form-group {
-        flex-direction: column;
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background: #007bff;
+      color: #fff;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .message {
+      margin-top: 15px;
+      text-align: center;
+      color: green;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
       }
     }
   </style>
 </head>
 <body>
+
+  <h1>Admin Panel - Add QnA</h1>
   <div class="container">
-    <h1>Admin Panel - Add QnA</h1>
+    <label for="class">Class</label>
+    <input type="text" id="class" placeholder="e.g., 10">
 
-    <!-- Single QnA Form -->
-    <div class="form-section">
-      <h2>Add Single QnA</h2>
-      <div class="form-group">
-        <label>Question</label>
-        <textarea id="question"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Answer</label>
-        <textarea id="answer"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Class</label>
-        <input type="text" id="classInput" />
-      </div>
-      <div class="form-group">
-        <label>Subject</label>
-        <input type="text" id="subject" />
-      </div>
-      <div class="form-group">
-        <label>Chapter</label>
-        <input type="text" id="chapter" />
-      </div>
-      <div class="form-group">
-        <label>Marks</label>
-        <input type="number" id="marks" />
-      </div>
-      <button class="btn" onclick="addSingleQnA()">Add QnA</button>
-    </div>
+    <label for="subject">Subject</label>
+    <input type="text" id="subject" placeholder="e.g., English">
 
-    <!-- Bulk QnA Form -->
-    <div class="bulk-section">
-      <h2>Bulk QnA (Excel-style)</h2>
-      <button class="btn" onclick="addRow()">Add Row</button>
-      <table id="bulkTable">
-        <thead>
-          <tr>
-            <th>Question</th>
-            <th>Answer</th>
-            <th>Class</th>
-            <th>Subject</th>
-            <th>Chapter</th>
-            <th>Marks</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Rows will be added dynamically -->
-        </tbody>
-      </table>
-      <button class="btn" onclick="submitBulk()">Submit All</button>
-    </div>
+    <label for="chapter">Chapter</label>
+    <input type="text" id="chapter" placeholder="e.g., Chapter 5">
+
+    <label for="marks">Marks</label>
+    <input type="number" id="marks" placeholder="e.g., 5">
+
+    <label for="question">Question</label>
+    <textarea id="question" placeholder="Write the question here"></textarea>
+
+    <label for="answer">Answer</label>
+    <textarea id="answer" placeholder="Write the answer here"></textarea>
+
+    <button id="addBtn">Add QnA</button>
+
+    <div class="message" id="messageBox"></div>
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
+    import { db } from './FirebaseConfig.js';
+    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
-      authDomain: "qnasite-6d9cc.firebaseapp.com",
-      projectId: "qnasite-6d9cc",
-      storageBucket: "qnasite-6d9cc.appspot.com",
-      messagingSenderId: "707268852195",
-      appId: "1:707268852195:web:05e13ee17b0d96253688d6"
-    };
+    const addBtn = document.getElementById('addBtn');
+    const messageBox = document.getElementById('messageBox');
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Add single QnA
-    window.addSingleQnA = async function () {
-      const question = document.getElementById('question').value.trim();
-      const answer = document.getElementById('answer').value.trim();
-      const classVal = document.getElementById('classInput').value.trim();
+    addBtn.addEventListener('click', async () => {
+      const classVal = document.getElementById('class').value.trim();
       const subject = document.getElementById('subject').value.trim();
       const chapter = document.getElementById('chapter').value.trim();
-      const marks = parseInt(document.getElementById('marks').value);
+      const marks = parseInt(document.getElementById('marks').value.trim());
+      const question = document.getElementById('question').value.trim();
+      const answer = document.getElementById('answer').value.trim();
 
-      if (!question || !answer || !classVal || !subject || !chapter || isNaN(marks)) {
-        alert("Please fill all fields correctly.");
+      if (!classVal || !subject || !chapter || !question || !answer || isNaN(marks)) {
+        messageBox.style.color = "red";
+        messageBox.textContent = "Please fill in all fields correctly.";
         return;
       }
 
-      await addDoc(collection(db, "questions"), {
-        question,
-        answer,
-        class: classVal,
-        subject,
-        chapter,
-        marks,
-        time: serverTimestamp()
-      });
-
-      alert("QnA added successfully!");
-    };
-
-    // Add new row for bulk input
-    window.addRow = function () {
-      const tbody = document.getElementById("bulkTable").querySelector("tbody");
-      const row = document.createElement("tr");
-
-      row.innerHTML = `
-        <td><textarea></textarea></td>
-        <td><textarea></textarea></td>
-        <td><input type="text" /></td>
-        <td><input type="text" /></td>
-        <td><input type="text" /></td>
-        <td><input type="number" /></td>
-        <td><button onclick="this.closest('tr').remove()">❌</button></td>
-      `;
-      tbody.appendChild(row);
-    };
-
-    // Submit all bulk QnAs
-    window.submitBulk = async function () {
-      const rows = document.querySelectorAll("#bulkTable tbody tr");
-
-      for (let row of rows) {
-        const cells = row.querySelectorAll("td");
-        const [q, a, c, s, ch, m] = [...cells].map(cell => cell.querySelector('textarea, input').value.trim());
-
-        if (!q || !a || !c || !s || !ch || isNaN(parseInt(m))) {
-          alert("Check all rows. One or more fields are empty or invalid.");
-          return;
-        }
-
+      try {
         await addDoc(collection(db, "questions"), {
-          question: q,
-          answer: a,
-          class: c,
-          subject: s,
-          chapter: ch,
-          marks: parseInt(m),
+          class: classVal,
+          subject,
+          chapter,
+          marks,
+          question,
+          answer,
           time: serverTimestamp()
         });
-      }
 
-      alert("All QnAs added successfully!");
-      document.querySelector("#bulkTable tbody").innerHTML = "";
-    };
+        messageBox.style.color = "green";
+        messageBox.textContent = "QnA added successfully!";
+
+        // Clear inputs
+        document.getElementById('class').value = '';
+        document.getElementById('subject').value = '';
+        document.getElementById('chapter').value = '';
+        document.getElementById('marks').value = '';
+        document.getElementById('question').value = '';
+        document.getElementById('answer').value = '';
+
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        messageBox.style.color = "red";
+        messageBox.textContent = "Error adding QnA. Check console.";
+      }
+    });
   </script>
+
 </body>
 </html>
