@@ -3,131 +3,130 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel - QnA</title>
+  <title>Admin Panel - QnA Site</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f7f7f7;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
+    .admin-container {
       background: white;
-      padding: 20px;
+      padding: 20px 25px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 10px;
     }
-
-    h2 {
+    .admin-container h2 {
       text-align: center;
+      margin-bottom: 20px;
       color: #333;
     }
-
-    label {
-      display: block;
-      margin-top: 15px;
+    input, textarea, button {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 10px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    textarea {
+      height: 100px;
+      resize: vertical;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
       font-weight: bold;
     }
-
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    button {
-      margin-top: 20px;
-      width: 100%;
-      background-color: #007BFF;
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
     button:hover {
-      background-color: #0056b3;
+      background: #0056b3;
     }
-
-    @media (max-width: 600px) {
-      .container {
-        margin: 20px;
-      }
+    .status {
+      margin-top: 10px;
+      font-weight: bold;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Admin Panel - Add QnA</h2>
-
-    <label for="classInput">Class</label>
-    <input type="text" id="classInput" placeholder="e.g., 10" />
-
-    <label for="subjectInput">Subject</label>
-    <input type="text" id="subjectInput" placeholder="e.g., Science" />
-
-    <label for="chapterInput">Chapter</label>
-    <input type="text" id="chapterInput" placeholder="e.g., Light" />
-
-    <label for="marksInput">Marks</label>
-    <input type="number" id="marksInput" placeholder="e.g., 5" />
-
-    <label for="questionInput">Question</label>
-    <textarea id="questionInput" rows="4" placeholder="Type the question here..."></textarea>
-
-    <label for="answerInput">Answer</label>
-    <textarea id="answerInput" rows="6" placeholder="Type the answer here..."></textarea>
-
+  <div class="admin-container">
+    <h2>Add QnA</h2>
+    <input type="text" id="classInput" placeholder="Class (e.g. 10)">
+    <input type="text" id="subjectInput" placeholder="Subject (e.g. Science)">
+    <input type="text" id="chapterInput" placeholder="Chapter (e.g. Force)">
+    <input type="number" id="marksInput" placeholder="Marks (e.g. 5)">
+    <textarea id="questionInput" placeholder="Enter question"></textarea>
+    <textarea id="answerInput" placeholder="Enter answer"></textarea>
     <button id="addBtn">Add QnA</button>
+    <div class="status" id="statusMsg"></div>
   </div>
 
-  <!-- Firebase and logic -->
+  <!-- Firebase Config -->
   <script type="module">
-    import { db } from './FirebaseConfig.js';
-    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
 
-    document.getElementById('addBtn').addEventListener('click', async () => {
-      const classVal = document.getElementById('classInput').value.trim();
-      const subjectVal = document.getElementById('subjectInput').value.trim();
-      const chapterVal = document.getElementById('chapterInput').value.trim();
-      const marksVal = parseInt(document.getElementById('marksInput').value.trim());
-      const questionVal = document.getElementById('questionInput').value.trim();
-      const answerVal = document.getElementById('answerInput').value.trim();
+    const firebaseConfig = {
+      apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
+      authDomain: "qnasite-6d9cc.firebaseapp.com",
+      projectId: "qnasite-6d9cc",
+      storageBucket: "qnasite-6d9cc.appspot.com",
+      messagingSenderId: "707268852195",
+      appId: "1:707268852195:web:05e13ee17b0d96253688d6"
+    };
 
-      if (!classVal || !subjectVal || !chapterVal || !questionVal || !answerVal || isNaN(marksVal)) {
-        alert("Please fill all fields correctly.");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById("addBtn").addEventListener("click", async () => {
+      const classVal = document.getElementById("classInput").value.trim();
+      const subject = document.getElementById("subjectInput").value.trim();
+      const chapter = document.getElementById("chapterInput").value.trim();
+      const marks = parseInt(document.getElementById("marksInput").value);
+      const question = document.getElementById("questionInput").value.trim();
+      const answer = document.getElementById("answerInput").value.trim();
+
+      const statusMsg = document.getElementById("statusMsg");
+      statusMsg.innerText = "";
+
+      if (!classVal || !subject || !chapter || !marks || !question || !answer) {
+        statusMsg.innerText = "Please fill in all fields.";
+        statusMsg.style.color = "red";
         return;
       }
 
       try {
         await addDoc(collection(db, "questions"), {
           class: classVal,
-          subject: subjectVal,
-          chapter: chapterVal,
-          marks: marksVal,
-          question: questionVal,
-          answer: answerVal,
+          subject: subject,
+          chapter: chapter,
+          marks: marks,
+          question: question,
+          answer: answer,
           time: serverTimestamp()
         });
-        alert("QnA added successfully!");
+        statusMsg.innerText = "QnA added successfully!";
+        statusMsg.style.color = "green";
+
         // Clear inputs
-        document.getElementById('classInput').value = '';
-        document.getElementById('subjectInput').value = '';
-        document.getElementById('chapterInput').value = '';
-        document.getElementById('marksInput').value = '';
-        document.getElementById('questionInput').value = '';
-        document.getElementById('answerInput').value = '';
+        document.getElementById("classInput").value = "";
+        document.getElementById("subjectInput").value = "";
+        document.getElementById("chapterInput").value = "";
+        document.getElementById("marksInput").value = "";
+        document.getElementById("questionInput").value = "";
+        document.getElementById("answerInput").value = "";
       } catch (error) {
         console.error("Error adding QnA:", error);
-        alert("Failed to add QnA. Check console for details.");
+        statusMsg.innerText = "Error adding data.";
+        statusMsg.style.color = "red";
       }
     });
   </script>
