@@ -3,94 +3,157 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel - QnA Uploader</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"/>
+  <title>Admin Panel - QnA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
-      background: #f4f4f4;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
       padding: 20px;
+      background: #f4f4f4;
     }
-    h2 {
+
+    h1 {
       text-align: center;
-      margin-bottom: 20px;
-      color: #333;
+      color: #2c3e50;
     }
+
     .container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: auto;
+    }
+
+    .form-section, .bulk-section {
       background: #fff;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow-x: auto;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .form-group input, .form-group textarea {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      width: fit-content;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 15px;
+      margin-top: 10px;
     }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-    }
-    th {
-      background: #333;
-      color: #fff;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      font-size: 14px;
-      border-radius: 5px;
+
+    table, th, td {
       border: 1px solid #ccc;
     }
-    textarea {
-      resize: vertical;
+
+    th, td {
+      padding: 10px;
+      text-align: left;
     }
-    .btn {
-      background: #007bff;
-      color: white;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-right: 10px;
+
+    th {
+      background: #ecf0f1;
     }
-    .btn:hover {
-      background: #0056b3;
-    }
-    .btn-row {
-      text-align: center;
-      margin-top: 10px;
+
+    @media (max-width: 768px) {
+      .form-group {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-  <h2>Admin Panel - Add Multiple QnAs</h2>
   <div class="container">
-    <table id="qnaTable">
-      <thead>
-        <tr>
-          <th>Class</th>
-          <th>Subject</th>
-          <th>Chapter</th>
-          <th>Marks</th>
-          <th>Question</th>
-          <th>Answer</th>
-        </tr>
-      </thead>
-      <tbody id="qnaBody">
-        <!-- Rows will be added dynamically -->
-      </tbody>
-    </table>
-    <div class="btn-row">
-      <button class="btn" onclick="addRow()">➕ Add Row</button>
-      <button class="btn" onclick="uploadData()">📤 Upload to Firebase</button>
+    <h1>Admin Panel - Add QnA</h1>
+
+    <!-- Single QnA Form -->
+    <div class="form-section">
+      <h2>Add Single QnA</h2>
+      <div class="form-group">
+        <label>Question</label>
+        <textarea id="question"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Answer</label>
+        <textarea id="answer"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Class</label>
+        <input type="text" id="classInput" />
+      </div>
+      <div class="form-group">
+        <label>Subject</label>
+        <input type="text" id="subject" />
+      </div>
+      <div class="form-group">
+        <label>Chapter</label>
+        <input type="text" id="chapter" />
+      </div>
+      <div class="form-group">
+        <label>Marks</label>
+        <input type="number" id="marks" />
+      </div>
+      <button class="btn" onclick="addSingleQnA()">Add QnA</button>
+    </div>
+
+    <!-- Bulk QnA Form -->
+    <div class="bulk-section">
+      <h2>Bulk QnA (Excel-style)</h2>
+      <button class="btn" onclick="addRow()">Add Row</button>
+      <table id="bulkTable">
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Chapter</th>
+            <th>Marks</th>
+            <th>Remove</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be added dynamically -->
+        </tbody>
+      </table>
+      <button class="btn" onclick="submitBulk()">Submit All</button>
     </div>
   </div>
 
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
@@ -107,60 +170,77 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Add initial row
-    window.onload = () => addRow();
+    // Add single QnA
+    window.addSingleQnA = async function () {
+      const question = document.getElementById('question').value.trim();
+      const answer = document.getElementById('answer').value.trim();
+      const classVal = document.getElementById('classInput').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const chapter = document.getElementById('chapter').value.trim();
+      const marks = parseInt(document.getElementById('marks').value);
 
-    // Add a new row to the table
+      if (!question || !answer || !classVal || !subject || !chapter || isNaN(marks)) {
+        alert("Please fill all fields correctly.");
+        return;
+      }
+
+      await addDoc(collection(db, "questions"), {
+        question,
+        answer,
+        class: classVal,
+        subject,
+        chapter,
+        marks,
+        time: serverTimestamp()
+      });
+
+      alert("QnA added successfully!");
+    };
+
+    // Add new row for bulk input
     window.addRow = function () {
-      const tbody = document.getElementById("qnaBody");
+      const tbody = document.getElementById("bulkTable").querySelector("tbody");
       const row = document.createElement("tr");
+
       row.innerHTML = `
-        <td><input type="text" class="class" placeholder="Ex: 10" /></td>
-        <td><input type="text" class="subject" placeholder="Ex: English" /></td>
-        <td><input type="text" class="chapter" placeholder="Ex: Poem 3" /></td>
-        <td><input type="number" class="marks" placeholder="Ex: 5" /></td>
-        <td><textarea class="question" placeholder="Write the question..."></textarea></td>
-        <td><textarea class="answer" placeholder="Write the answer..."></textarea></td>
+        <td><textarea></textarea></td>
+        <td><textarea></textarea></td>
+        <td><input type="text" /></td>
+        <td><input type="text" /></td>
+        <td><input type="text" /></td>
+        <td><input type="number" /></td>
+        <td><button onclick="this.closest('tr').remove()">❌</button></td>
       `;
       tbody.appendChild(row);
-    }
+    };
 
-    // Upload all QnAs to Firebase
-    window.uploadData = async function () {
-      const rows = document.querySelectorAll("#qnaBody tr");
-      let successCount = 0;
+    // Submit all bulk QnAs
+    window.submitBulk = async function () {
+      const rows = document.querySelectorAll("#bulkTable tbody tr");
 
-      for (const row of rows) {
-        const classVal = row.querySelector(".class").value.trim();
-        const subject = row.querySelector(".subject").value.trim();
-        const chapter = row.querySelector(".chapter").value.trim();
-        const marks = parseInt(row.querySelector(".marks").value.trim());
-        const question = row.querySelector(".question").value.trim();
-        const answer = row.querySelector(".answer").value.trim();
+      for (let row of rows) {
+        const cells = row.querySelectorAll("td");
+        const [q, a, c, s, ch, m] = [...cells].map(cell => cell.querySelector('textarea, input').value.trim());
 
-        if (!classVal || !subject || !chapter || !question || !answer || isNaN(marks)) {
-          alert("Fill all fields correctly before uploading.");
+        if (!q || !a || !c || !s || !ch || isNaN(parseInt(m))) {
+          alert("Check all rows. One or more fields are empty or invalid.");
           return;
         }
 
-        try {
-          await addDoc(collection(db, "questions"), {
-            class: classVal,
-            subject,
-            chapter,
-            marks,
-            question,
-            answer,
-            time: serverTimestamp()
-          });
-          successCount++;
-        } catch (error) {
-          console.error("Error uploading QnA:", error);
-        }
+        await addDoc(collection(db, "questions"), {
+          question: q,
+          answer: a,
+          class: c,
+          subject: s,
+          chapter: ch,
+          marks: parseInt(m),
+          time: serverTimestamp()
+        });
       }
 
-      alert(`${successCount} QnA(s) uploaded successfully.`);
-    }
+      alert("All QnAs added successfully!");
+      document.querySelector("#bulkTable tbody").innerHTML = "";
+    };
   </script>
 </body>
 </html>
