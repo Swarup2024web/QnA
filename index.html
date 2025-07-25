@@ -4,22 +4,112 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Swarup QnA</title>
-  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
   <h1>Swarup QnA</h1>
 
-  <!-- Filters -->
-  <div class="filters">
+  <!-- Filter Dropdowns -->
+  <div>
     <select id="filter-class"><option value="">Class</option></select>
     <select id="filter-subject"><option value="">Subject</option></select>
     <select id="filter-chapter"><option value="">Chapter</option></select>
     <select id="filter-marks"><option value="">Marks</option></select>
   </div>
 
-  <!-- QnA List -->
+  <!-- QnA Display Container -->
   <div id="qna-container"></div>
 
-  <script type="module" src="script.js"></script>
+  <!-- Firebase and Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
+      authDomain: "qnasite-6d9cc.firebaseapp.com",
+      projectId: "qnasite-6d9cc",
+      storageBucket: "qnasite-6d9cc.firebasestorage.app",
+      messagingSenderId: "707268852195",
+      appId: "1:707268852195:web:05e13ee17b0d96253688d6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const qnaRef = collection(db, "qna");
+
+    const qnaContainer = document.getElementById("qna-container");
+    const classFilter = document.getElementById("filter-class");
+    const subjectFilter = document.getElementById("filter-subject");
+    const chapterFilter = document.getElementById("filter-chapter");
+    const marksFilter = document.getElementById("filter-marks");
+
+    let allQnAs = [];
+
+    async function loadQnAs() {
+      const snapshot = await getDocs(qnaRef);
+      allQnAs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      populateFilters();
+      displayQnAs(allQnAs);
+    }
+
+    function populateFilters() {
+      const classes = new Set();
+      const subjects = new Set();
+      const chapters = new Set();
+      const marks = new Set();
+
+      allQnAs.forEach(qna => {
+        classes.add(qna.class);
+        subjects.add(qna.subject);
+        chapters.add(qna.chapter);
+        marks.add(qna.marks);
+      });
+
+      for (let item of classes) classFilter.innerHTML += `<option value="${item}">${item}</option>`;
+      for (let item of subjects) subjectFilter.innerHTML += `<option value="${item}">${item}</option>`;
+      for (let item of chapters) chapterFilter.innerHTML += `<option value="${item}">${item}</option>`;
+      for (let item of marks) marksFilter.innerHTML += `<option value="${item}">${item}</option>`;
+    }
+
+    function displayQnAs(list) {
+      qnaContainer.innerHTML = "";
+      list.forEach(qna => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <h3>Q: ${qna.question}</h3>
+          <p><strong>A:</strong> ${qna.answer}</p>
+          <p>Class: ${qna.class} | Subject: ${qna.subject} | Chapter: ${qna.chapter} | Marks: ${qna.marks}</p>
+          <hr/>
+        `;
+        qnaContainer.appendChild(div);
+      });
+    }
+
+    function filterQnAs() {
+      const fClass = classFilter.value;
+      const fSubject = subjectFilter.value;
+      const fChapter = chapterFilter.value;
+      const fMarks = marksFilter.value;
+
+      const filtered = allQnAs.filter(qna =>
+        (!fClass || qna.class === fClass) &&
+        (!fSubject || qna.subject === fSubject) &&
+        (!fChapter || qna.chapter === fChapter) &&
+        (!fMarks || qna.marks === fMarks)
+      );
+
+      displayQnAs(filtered);
+    }
+
+    [classFilter, subjectFilter, chapterFilter, marksFilter].forEach(select => {
+      select.addEventListener("change", filterQnAs);
+    });
+
+    loadQnAs();
+  </script>
+
 </body>
 </html>
