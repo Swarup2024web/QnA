@@ -3,187 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>QnA Explorer</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
-      color: #333;
-    }
-    header {
-      background-color: #1e90ff;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.5rem;
-    }
-    nav {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      padding: 1rem;
-      background-color: #e0e0e0;
-      font-size: 1.2rem;
-    }
-    nav a {
-      text-decoration: none;
-      color: #333;
-    }
-    nav a:hover {
-      color: #1e90ff;
-    }
-    .filter-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-      padding: 20px;
-    }
-    .filter-container select {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      min-width: 150px;
-    }
-    .qna-container {
-      max-width: 900px;
-      margin: auto;
-      padding: 20px;
-    }
-    .qna-card {
-      background: white;
-      padding: 15px 20px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .qna-card h4 {
-      margin: 0;
-      font-size: 1.1rem;
-      color: #333;
-    }
-    .qna-card p {
-      margin: 8px 0 0;
-    }
-    @media screen and (max-width: 600px) {
-      nav {
-        flex-direction: row;
-        justify-content: space-evenly;
-        font-size: 1rem;
-      }
-    }
-  </style>
+  <title>Swarup QnA</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>QnA Explorer</header>
+  <h1>Swarup QnA</h1>
 
-  <nav>
-    <a href="#"><i class="fas fa-home"></i></a>
-    <a href="#"><i class="fas fa-clipboard-list"></i></a>
-    <a href="#"><i class="fas fa-book-open"></i></a>
-  </nav>
-
-  <div class="filter-container">
-    <select id="classFilter">
-      <option value="">Class</option>
-    </select>
-    <select id="subjectFilter">
-      <option value="">Subject</option>
-    </select>
-    <select id="chapterFilter">
-      <option value="">Chapter</option>
-    </select>
-    <select id="marksFilter">
-      <option value="">Marks</option>
-    </select>
+  <!-- Filters -->
+  <div class="filters">
+    <select id="filter-class"><option value="">Class</option></select>
+    <select id="filter-subject"><option value="">Subject</option></select>
+    <select id="filter-chapter"><option value="">Chapter</option></select>
+    <select id="filter-marks"><option value="">Marks</option></select>
   </div>
 
-  <div class="qna-container" id="qnaList">
-    <!-- QnAs will appear here -->
-  </div>
+  <!-- QnA List -->
+  <div id="qna-container"></div>
 
-  <script type="module">
-    import { db } from './firebaseConfig.js';
-    import {
-      collection,
-      getDocs,
-      query,
-      where
-    } from 'https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js';
-
-    const classFilter = document.getElementById('classFilter');
-    const subjectFilter = document.getElementById('subjectFilter');
-    const chapterFilter = document.getElementById('chapterFilter');
-    const marksFilter = document.getElementById('marksFilter');
-    const qnaList = document.getElementById('qnaList');
-
-    // Load all QnAs
-    async function loadQnAs() {
-      qnaList.innerHTML = '<p>Loading QnAs...</p>';
-      const qRef = collection(db, 'questions');
-      const snapshot = await getDocs(qRef);
-      const data = snapshot.docs.map(doc => doc.data());
-
-      const selectedClass = classFilter.value;
-      const selectedSubject = subjectFilter.value;
-      const selectedChapter = chapterFilter.value;
-      const selectedMarks = marksFilter.value;
-
-      let filtered = data;
-      if (selectedClass) filtered = filtered.filter(d => d.class == selectedClass);
-      if (selectedSubject) filtered = filtered.filter(d => d.subject == selectedSubject);
-      if (selectedChapter) filtered = filtered.filter(d => d.chapter == selectedChapter);
-      if (selectedMarks) filtered = filtered.filter(d => d.marks == selectedMarks);
-
-      renderQnAs(filtered);
-    }
-
-    function renderQnAs(data) {
-      if (data.length === 0) {
-        qnaList.innerHTML = '<p>No QnAs found.</p>';
-        return;
-      }
-
-      qnaList.innerHTML = '';
-      data.forEach(q => {
-        const card = document.createElement('div');
-        card.className = 'qna-card';
-        card.innerHTML = `<h4>Q: ${q.question}</h4><p><strong>Ans:</strong> ${q.answer}</p>`;
-        qnaList.appendChild(card);
-      });
-    }
-
-    // Load filter values dynamically from Firestore
-    async function loadFilters() {
-      const qRef = collection(db, 'questions');
-      const snapshot = await getDocs(qRef);
-      const data = snapshot.docs.map(doc => doc.data());
-
-      populateDropdown(classFilter, [...new Set(data.map(q => q.class))]);
-      populateDropdown(subjectFilter, [...new Set(data.map(q => q.subject))]);
-      populateDropdown(chapterFilter, [...new Set(data.map(q => q.chapter))]);
-      populateDropdown(marksFilter, [...new Set(data.map(q => q.marks))]);
-    }
-
-    function populateDropdown(dropdown, items) {
-      items.sort();
-      items.forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item;
-        opt.textContent = item;
-        dropdown.appendChild(opt);
-      });
-    }
-
-    // Event Listeners
-    [classFilter, subjectFilter, chapterFilter, marksFilter].forEach(dropdown => {
-      dropdown.addEventListener('change', loadQnAs);
-    });
-
-    // Init
-    loadFilters().then(loadQnAs);
-  </script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
