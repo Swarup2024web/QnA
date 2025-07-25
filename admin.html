@@ -1,134 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel - QnA Site</title>
+  <meta charset="UTF-8">
+  <title>Swarup QnA Admin Panel</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
-      background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
     }
-    .admin-container {
-      background: white;
-      padding: 20px 25px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 90%;
-      max-width: 500px;
-      border-radius: 10px;
-    }
-    .admin-container h2 {
+    h1 {
       text-align: center;
       margin-bottom: 20px;
-      color: #333;
+      color: #2e7d32;
     }
-    input, textarea, button {
+    form {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      max-width: 600px;
+      margin: auto;
+    }
+    form input, form textarea {
       width: 100%;
-      margin-bottom: 12px;
-      padding: 10px;
-      font-size: 1em;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      border-radius: 6px;
     }
-    textarea {
-      height: 100px;
-      resize: vertical;
-    }
-    button {
-      background: #007bff;
+    form button {
+      padding: 10px 20px;
+      background-color: #2e7d32;
       color: white;
       border: none;
+      border-radius: 5px;
       cursor: pointer;
-      font-weight: bold;
     }
-    button:hover {
-      background: #0056b3;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
     }
-    .status {
-      margin-top: 10px;
-      font-weight: bold;
-      text-align: center;
+    th, td {
+      padding: 10px;
+      background: white;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #e0f2f1;
+    }
+    button.edit, button.delete {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    button.edit {
+      background-color: #0288d1;
+      color: white;
+    }
+    button.delete {
+      background-color: #c62828;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <div class="admin-container">
-    <h2>Add QnA</h2>
-    <input type="text" id="classInput" placeholder="Class (e.g. 10)">
-    <input type="text" id="subjectInput" placeholder="Subject (e.g. Science)">
-    <input type="text" id="chapterInput" placeholder="Chapter (e.g. Force)">
-    <input type="number" id="marksInput" placeholder="Marks (e.g. 5)">
-    <textarea id="questionInput" placeholder="Enter question"></textarea>
-    <textarea id="answerInput" placeholder="Enter answer"></textarea>
-    <button id="addBtn">Add QnA</button>
-    <div class="status" id="statusMsg"></div>
-  </div>
 
-  <!-- Firebase Config -->
+  <h1>Swarup QnA Admin Panel</h1>
+
+  <form id="qna-form">
+    <input type="text" id="class" placeholder="Class" required>
+    <input type="text" id="subject" placeholder="Subject" required>
+    <input type="text" id="chapter" placeholder="Chapter" required>
+    <input type="text" id="marks" placeholder="Marks" required>
+    <textarea id="question" placeholder="Enter Question" required></textarea>
+    <textarea id="answer" placeholder="Enter Answer" required></textarea>
+    <button type="submit">Save QnA</button>
+    <input type="hidden" id="edit-id">
+  </form>
+
+  <table id="qna-table">
+    <thead>
+      <tr>
+        <th>Class</th>
+        <th>Subject</th>
+        <th>Chapter</th>
+        <th>Marks</th>
+        <th>Question</th>
+        <th>Answer</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.24.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
       authDomain: "qnasite-6d9cc.firebaseapp.com",
       projectId: "qnasite-6d9cc",
-      storageBucket: "qnasite-6d9cc.appspot.com",
+      storageBucket: "qnasite-6d9cc.firebasestorage.app",
       messagingSenderId: "707268852195",
       appId: "1:707268852195:web:05e13ee17b0d96253688d6"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const qnaRef = collection(db, "qna");
 
-    document.getElementById("addBtn").addEventListener("click", async () => {
-      const classVal = document.getElementById("classInput").value.trim();
-      const subject = document.getElementById("subjectInput").value.trim();
-      const chapter = document.getElementById("chapterInput").value.trim();
-      const marks = parseInt(document.getElementById("marksInput").value);
-      const question = document.getElementById("questionInput").value.trim();
-      const answer = document.getElementById("answerInput").value.trim();
+    const form = document.getElementById("qna-form");
+    const tableBody = document.querySelector("#qna-table tbody");
 
-      const statusMsg = document.getElementById("statusMsg");
-      statusMsg.innerText = "";
+    const inputFields = {
+      class: document.getElementById("class"),
+      subject: document.getElementById("subject"),
+      chapter: document.getElementById("chapter"),
+      marks: document.getElementById("marks"),
+      question: document.getElementById("question"),
+      answer: document.getElementById("answer"),
+      editId: document.getElementById("edit-id")
+    };
 
-      if (!classVal || !subject || !chapter || !marks || !question || !answer) {
-        statusMsg.innerText = "Please fill in all fields.";
-        statusMsg.style.color = "red";
-        return;
+    async function fetchQnAs() {
+      tableBody.innerHTML = "";
+      const snapshot = await getDocs(qnaRef);
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.class}</td>
+          <td>${data.subject}</td>
+          <td>${data.chapter}</td>
+          <td>${data.marks}</td>
+          <td>${data.question}</td>
+          <td>${data.answer}</td>
+          <td>
+            <button class="edit" data-id="${docSnap.id}">Edit</button>
+            <button class="delete" data-id="${docSnap.id}">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const qnaData = {
+        class: inputFields.class.value,
+        subject: inputFields.subject.value,
+        chapter: inputFields.chapter.value,
+        marks: inputFields.marks.value,
+        question: inputFields.question.value,
+        answer: inputFields.answer.value
+      };
+
+      const id = inputFields.editId.value;
+      if (id) {
+        const docRef = doc(db, "qna", id);
+        await updateDoc(docRef, qnaData);
+        inputFields.editId.value = "";
+      } else {
+        await addDoc(qnaRef, qnaData);
       }
 
-      try {
-        await addDoc(collection(db, "questions"), {
-          class: classVal,
-          subject: subject,
-          chapter: chapter,
-          marks: marks,
-          question: question,
-          answer: answer,
-          time: serverTimestamp()
-        });
-        statusMsg.innerText = "QnA added successfully!";
-        statusMsg.style.color = "green";
+      form.reset();
+      fetchQnAs();
+    });
 
-        // Clear inputs
-        document.getElementById("classInput").value = "";
-        document.getElementById("subjectInput").value = "";
-        document.getElementById("chapterInput").value = "";
-        document.getElementById("marksInput").value = "";
-        document.getElementById("questionInput").value = "";
-        document.getElementById("answerInput").value = "";
-      } catch (error) {
-        console.error("Error adding QnA:", error);
-        statusMsg.innerText = "Error adding data.";
-        statusMsg.style.color = "red";
+    tableBody.addEventListener("click", async (e) => {
+      if (e.target.classList.contains("delete")) {
+        const id = e.target.dataset.id;
+        await deleteDoc(doc(db, "qna", id));
+        fetchQnAs();
+      }
+
+      if (e.target.classList.contains("edit")) {
+        const id = e.target.dataset.id;
+        const docSnap = await getDocs(qnaRef);
+        docSnap.forEach(docu => {
+          if (docu.id === id) {
+            const data = docu.data();
+            inputFields.class.value = data.class;
+            inputFields.subject.value = data.subject;
+            inputFields.chapter.value = data.chapter;
+            inputFields.marks.value = data.marks;
+            inputFields.question.value = data.question;
+            inputFields.answer.value = data.answer;
+            inputFields.editId.value = id;
+          }
+        });
       }
     });
+
+    fetchQnAs();
   </script>
+
 </body>
 </html>
