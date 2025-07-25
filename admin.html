@@ -3,93 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Swarup QnA Admin</title>
+  <title>Swarup QnA Admin Panel</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 1rem;
-      background-color: #f4f4f4;
+      font-family: sans-serif;
+      padding: 20px;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    form {
-      background-color: #fff;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      max-width: 600px;
-      margin: 0 auto 2rem;
-    }
-    form input, form textarea, form select, form button {
-      width: 100%;
-      margin-bottom: 1rem;
+    input, select, button {
       padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      margin: 5px;
+      width: 100%;
+      max-width: 300px;
     }
     table {
       width: 100%;
+      margin-top: 20px;
       border-collapse: collapse;
-      background: white;
     }
     th, td {
-      border: 1px solid #ddd;
-      padding: 0.5rem;
+      border: 1px solid #ccc;
+      padding: 10px;
       text-align: left;
     }
-    th {
-      background-color: #007BFF;
-      color: white;
-    }
-    button {
-      cursor: pointer;
-      background-color: #28a745;
-      color: white;
-      border: none;
-    }
-    .btn-danger {
-      background-color: #dc3545;
-    }
-    .actions button {
-      margin-right: 5px;
-    }
-    @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-      td {
-        border: none;
-        padding: 0.5rem 0;
-      }
-      th {
-        display: none;
-      }
-      td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        display: block;
-      }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
   </style>
 </head>
 <body>
+  <h2>Swarup QnA Admin Panel</h2>
 
-  <h1>Swarup QnA Admin Panel</h1>
+  <div class="row">
+    <input type="text" id="classInput" placeholder="Class" />
+    <input type="text" id="subjectInput" placeholder="Subject" />
+    <input type="text" id="chapterInput" placeholder="Chapter" />
+    <input type="number" id="marksInput" placeholder="Marks" />
+    <textarea id="questionInput" placeholder="Question"></textarea>
+    <textarea id="answerInput" placeholder="Answer"></textarea>
+    <button id="addBtn">Add QnA</button>
+  </div>
 
-  <form id="qna-form">
-    <input type="text" id="class" placeholder="Class" required />
-    <input type="text" id="subject" placeholder="Subject" required />
-    <input type="text" id="chapter" placeholder="Chapter" required />
-    <input type="number" id="marks" placeholder="Marks" required />
-    <textarea id="question" placeholder="Enter question" required></textarea>
-    <textarea id="answer" placeholder="Enter answer" required></textarea>
-    <button type="submit">Add QnA</button>
-  </form>
-
-  <table id="qna-table">
+  <table>
     <thead>
       <tr>
         <th>Class</th>
@@ -101,77 +57,79 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- QnAs will appear here -->
-    </tbody>
+    <tbody id="qnaTableBody"></tbody>
   </table>
 
   <script type="module">
-    import { db, collection, getDocs, addDoc, deleteDoc, doc } from './firebase.js';
+    import {
+      db, collection, getDocs, addDoc, deleteDoc, doc
+    } from './firebase.js';
 
-    const qnaForm = document.getElementById('qna-form');
-    const qnaTableBody = document.querySelector('#qna-table tbody');
-    const qnaRef = collection(db, 'qna');
+    const qnaCollection = collection(db, "qna");
 
-    async function fetchQnAs() {
+    const classInput = document.getElementById("classInput");
+    const subjectInput = document.getElementById("subjectInput");
+    const chapterInput = document.getElementById("chapterInput");
+    const marksInput = document.getElementById("marksInput");
+    const questionInput = document.getElementById("questionInput");
+    const answerInput = document.getElementById("answerInput");
+    const addBtn = document.getElementById("addBtn");
+    const qnaTableBody = document.getElementById("qnaTableBody");
+
+    async function fetchQnA() {
+      const snapshot = await getDocs(qnaCollection);
       qnaTableBody.innerHTML = '';
-      const snapshot = await getDocs(qnaRef);
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
-        const row = document.createElement('tr');
-
-        row.innerHTML = `
-          <td data-label="Class">${data.class}</td>
-          <td data-label="Subject">${data.subject}</td>
-          <td data-label="Chapter">${data.chapter}</td>
-          <td data-label="Marks">${data.marks}</td>
-          <td data-label="Question">${data.question}</td>
-          <td data-label="Answer">${data.answer}</td>
-          <td class="actions">
-            <button class="btn-danger" data-id="${docSnap.id}">Delete</button>
-          </td>
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.class}</td>
+          <td>${data.subject}</td>
+          <td>${data.chapter}</td>
+          <td>${data.marks}</td>
+          <td>${data.question}</td>
+          <td>${data.answer}</td>
+          <td><button onclick="deleteQnA('${docSnap.id}')">Delete</button></td>
         `;
-        qnaTableBody.appendChild(row);
-      });
-
-      // Attach delete button listeners
-      document.querySelectorAll('.btn-danger').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const id = e.target.getAttribute('data-id');
-          await deleteDoc(doc(db, 'qna', id));
-          fetchQnAs();
-        });
+        qnaTableBody.appendChild(tr);
       });
     }
 
-    qnaForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const qnaData = {
-        class: document.getElementById('class').value,
-        subject: document.getElementById('subject').value,
-        chapter: document.getElementById('chapter').value,
-        marks: parseInt(document.getElementById('marks').value),
-        question: document.getElementById('question').value.trim(),
-        answer: document.getElementById('answer').value.trim()
+    async function addQnA() {
+      const newQnA = {
+        class: classInput.value,
+        subject: subjectInput.value,
+        chapter: chapterInput.value,
+        marks: Number(marksInput.value),
+        question: questionInput.value,
+        answer: answerInput.value
       };
-
-      if (!qnaData.question || !qnaData.answer) {
-        alert('Question and Answer cannot be empty.');
+      if (!newQnA.class || !newQnA.subject || !newQnA.question || !newQnA.answer) {
+        alert("Please fill all required fields");
         return;
       }
-
       try {
-        await addDoc(qnaRef, qnaData);
-        qnaForm.reset();
-        fetchQnAs();
-      } catch (err) {
-        console.error('Error adding QnA:', err);
+        await addDoc(qnaCollection, newQnA);
+        alert("QnA added!");
+        fetchQnA();
+        classInput.value = subjectInput.value = chapterInput.value = marksInput.value = questionInput.value = answerInput.value = '';
+      } catch (e) {
+        console.error("Error adding QnA:", e);
+        alert("Failed to add QnA");
       }
-    });
+    }
 
-    fetchQnAs();
+    window.deleteQnA = async function (id) {
+      try {
+        await deleteDoc(doc(qnaCollection, id));
+        fetchQnA();
+      } catch (e) {
+        console.error("Error deleting QnA:", e);
+      }
+    };
+
+    addBtn.addEventListener("click", addQnA);
+    fetchQnA();
   </script>
-
 </body>
 </html>
