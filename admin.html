@@ -3,111 +3,127 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Swarup QnA Admin Panel</title>
-
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-
+  <title>Admin Panel - Swarup QnA</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #f0faff, #e0ffe0);
       margin: 0;
       padding: 20px;
-      color: #222;
+      background: #f5f7fa;
+      color: #333;
     }
 
     h1 {
       text-align: center;
-      color: #00796b;
+      color: #006064;
       margin-bottom: 20px;
     }
 
     form {
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
       display: grid;
-      gap: 16px;
-      padding: 24px;
+      gap: 14px;
       background: white;
+      padding: 20px;
       border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     input, textarea, button {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
       width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
       box-sizing: border-box;
       font-family: inherit;
     }
 
+    textarea {
+      resize: vertical;
+    }
+
     button {
-      background-color: #00aaff;
+      background: #00796b;
       color: white;
-      border: none;
       font-weight: bold;
+      border: none;
       cursor: pointer;
-      transition: background-color 0.3s;
+      transition: background 0.3s;
     }
 
     button:hover {
-      background-color: #0077aa;
+      background: #004d40;
     }
 
     table {
+      margin-top: 40px;
       width: 100%;
-      margin-top: 30px;
       border-collapse: collapse;
       background: white;
-      font-size: 0.9rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
+      border: 1px solid #e0e0e0;
+      padding: 12px;
       text-align: left;
+      font-size: 14px;
     }
 
     th {
-      background-color: #e0f2f1;
+      background: #e0f2f1;
     }
 
     .icon-btn {
       cursor: pointer;
-      color: #0077aa;
-      margin-right: 10px;
+      color: #00796b;
+      margin-right: 8px;
+      font-size: 18px;
     }
 
     @media (max-width: 768px) {
-      form, table {
-        font-size: 0.85rem;
-        overflow-x: auto;
+      form {
+        padding: 16px;
       }
 
-      table {
+      table, thead, tbody, th, td, tr {
         display: block;
+      }
+
+      th, td {
+        padding: 10px;
+        font-size: 13px;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 4px;
+        color: #555;
       }
     }
   </style>
 </head>
 <body>
-  <h1>Swarup QnA Admin Panel</h1>
+
+  <h1>Admin Panel - Swarup QnA</h1>
 
   <form id="qnaForm">
-    <input type="text" id="classInput" placeholder="Enter Class (e.g. 6)" required />
-    <input type="text" id="subjectInput" placeholder="Enter Subject (e.g. Math)" required />
-    <input type="text" id="chapterInput" placeholder="Enter Chapter (e.g. 1)" required />
-    <input type="number" id="marksInput" placeholder="Enter Marks (e.g. 2)" required />
-    <textarea id="questionInput" placeholder="Enter Question" rows="3" required></textarea>
-    <textarea id="answerInput" placeholder="Enter Answer" rows="4" required></textarea>
+    <input type="text" id="classInput" placeholder="Class" required />
+    <input type="text" id="subjectInput" placeholder="Subject" required />
+    <input type="text" id="chapterInput" placeholder="Chapter" required />
+    <input type="number" id="marksInput" placeholder="Marks" required />
+    <textarea id="questionInput" placeholder="Question" rows="3" required></textarea>
+    <textarea id="answerInput" placeholder="Answer" rows="4" required></textarea>
     <button type="submit" id="submitBtn">Add QnA</button>
   </form>
 
-  <table id="qnaTable">
+  <table>
     <thead>
       <tr>
         <th>Class</th>
@@ -119,7 +135,7 @@
         <th>Actions</th>
       </tr>
     </thead>
-    <tbody></tbody>
+    <tbody id="qnaTable"></tbody>
   </table>
 
   <script type="module">
@@ -127,9 +143,8 @@
       db, collection, getDocs, addDoc, deleteDoc, doc, updateDoc
     } from './firebase.js';
 
-    const qnaForm = document.getElementById('qnaForm');
-    const qnaTableBody = document.querySelector('#qnaTable tbody');
-
+    const form = document.getElementById('qnaForm');
+    const qnaTable = document.getElementById('qnaTable');
     const classInput = document.getElementById('classInput');
     const subjectInput = document.getElementById('subjectInput');
     const chapterInput = document.getElementById('chapterInput');
@@ -141,24 +156,24 @@
     let editId = null;
 
     async function loadQnAs() {
-      qnaTableBody.innerHTML = '';
       const snapshot = await getDocs(collection(db, 'qna'));
+      qnaTable.innerHTML = '';
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${data.class}</td>
-          <td>${data.subject}</td>
-          <td>${data.chapter}</td>
-          <td>${data.marks}</td>
-          <td>${data.question}</td>
-          <td>${data.answer}</td>
-          <td>
-            <i class="fas fa-edit icon-btn" onclick="editQnA('${docSnap.id}', \`${data.class}\`, \`${data.subject}\`, \`${data.chapter}\`, ${data.marks}, \`${data.question.replace(/`/g, '\\`')}\`, \`${data.answer.replace(/`/g, '\\`')}\`)"></i>
-            <i class="fas fa-trash icon-btn" onclick="deleteQnA('${docSnap.id}')"></i>
+          <td data-label="Class">${data.class}</td>
+          <td data-label="Subject">${data.subject}</td>
+          <td data-label="Chapter">${data.chapter}</td>
+          <td data-label="Marks">${data.marks}</td>
+          <td data-label="Question">${data.question}</td>
+          <td data-label="Answer">${data.answer}</td>
+          <td data-label="Actions">
+            <span class="material-symbols-outlined icon-btn" onclick="editQnA('${docSnap.id}', \`${data.class}\`, \`${data.subject}\`, \`${data.chapter}\`, ${data.marks}, \`${data.question.replace(/`/g, '\\`')}\`, \`${data.answer.replace(/`/g, '\\`')}\`)">edit</span>
+            <span class="material-symbols-outlined icon-btn" onclick="deleteQnA('${docSnap.id}')">delete</span>
           </td>
         `;
-        qnaTableBody.appendChild(tr);
+        qnaTable.appendChild(tr);
       });
     }
 
@@ -174,15 +189,15 @@
     };
 
     window.deleteQnA = async (id) => {
-      if (confirm('Are you sure to delete this QnA?')) {
+      if (confirm("Delete this QnA?")) {
         await deleteDoc(doc(db, 'qna', id));
         loadQnAs();
       }
     };
 
-    qnaForm.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const qnaData = {
+      const qna = {
         class: classInput.value,
         subject: subjectInput.value,
         chapter: chapterInput.value,
@@ -192,14 +207,14 @@
       };
 
       if (editId) {
-        await updateDoc(doc(db, 'qna', editId), qnaData);
-        editId = null;
+        await updateDoc(doc(db, 'qna', editId), qna);
         submitBtn.innerText = 'Add QnA';
+        editId = null;
       } else {
-        await addDoc(collection(db, 'qna'), qnaData);
+        await addDoc(collection(db, 'qna'), qna);
       }
 
-      qnaForm.reset();
+      form.reset();
       loadQnAs();
     });
 
