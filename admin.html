@@ -3,17 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel - Swarup QnA</title>
+  <title>Swarup QnA Admin Panel</title>
 
-  <!-- Material Web Components -->
-  <script type="module" src="https://unpkg.com/@material/web/all.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #f1fafe, #e0ffe0);
+      background: linear-gradient(to right, #f0faff, #e0ffe0);
       margin: 0;
       padding: 20px;
       color: #222;
@@ -36,11 +34,27 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    md-outlined-select,
-    md-outlined-text-field,
-    md-outlined-textarea,
-    md-filled-button {
+    input, textarea, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
       width: 100%;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    button {
+      background-color: #00aaff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0077aa;
     }
 
     table {
@@ -84,33 +98,13 @@
   <h1>Swarup QnA Admin Panel</h1>
 
   <form id="qnaForm">
-    <md-outlined-select id="classInput" label="Class" required>
-      <md-select-option value="6"><div slot="headline">Class 6</div></md-select-option>
-      <md-select-option value="7"><div slot="headline">Class 7</div></md-select-option>
-      <md-select-option value="8"><div slot="headline">Class 8</div></md-select-option>
-      <md-select-option value="9"><div slot="headline">Class 9</div></md-select-option>
-      <md-select-option value="10"><div slot="headline">Class 10</div></md-select-option>
-    </md-outlined-select>
-
-    <md-outlined-select id="subjectInput" label="Subject" required>
-      <md-select-option value="Math"><div slot="headline">Math</div></md-select-option>
-      <md-select-option value="Science"><div slot="headline">Science</div></md-select-option>
-      <md-select-option value="English"><div slot="headline">English</div></md-select-option>
-      <md-select-option value="History"><div slot="headline">History</div></md-select-option>
-    </md-outlined-select>
-
-    <md-outlined-select id="chapterInput" label="Chapter" required>
-      <md-select-option value="1"><div slot="headline">Chapter 1</div></md-select-option>
-      <md-select-option value="2"><div slot="headline">Chapter 2</div></md-select-option>
-      <md-select-option value="3"><div slot="headline">Chapter 3</div></md-select-option>
-      <md-select-option value="4"><div slot="headline">Chapter 4</div></md-select-option>
-    </md-outlined-select>
-
-    <md-outlined-text-field id="marksInput" type="number" label="Marks" required></md-outlined-text-field>
-    <md-outlined-textarea id="questionInput" label="Enter Question" rows="3" required></md-outlined-textarea>
-    <md-outlined-textarea id="answerInput" label="Enter Answer" rows="4" required></md-outlined-textarea>
-
-    <md-filled-button id="submitBtn" type="submit" raised>Add QnA</md-filled-button>
+    <input type="text" id="classInput" placeholder="Enter Class (e.g. 6)" required />
+    <input type="text" id="subjectInput" placeholder="Enter Subject (e.g. Math)" required />
+    <input type="text" id="chapterInput" placeholder="Enter Chapter (e.g. 1)" required />
+    <input type="number" id="marksInput" placeholder="Enter Marks (e.g. 2)" required />
+    <textarea id="questionInput" placeholder="Enter Question" rows="3" required></textarea>
+    <textarea id="answerInput" placeholder="Enter Answer" rows="4" required></textarea>
+    <button type="submit" id="submitBtn">Add QnA</button>
   </form>
 
   <table id="qnaTable">
@@ -212,4 +206,4 @@
     loadQnAs();
   </script>
 </body>
-  </html>
+</html>
