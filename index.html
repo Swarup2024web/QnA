@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Swarup QnA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -25,18 +26,26 @@
     .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 24px;
       justify-content: center;
+      animation: fadeIn 0.6s ease-in;
     }
 
     select {
-      padding: 8px;
+      padding: 10px;
       font-size: 14px;
       border-radius: 8px;
       border: 1px solid #aaa;
-      min-width: 120px;
-      background-color: #fff;
+      min-width: 130px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    select:focus {
+      border-color: #00aaff;
+      box-shadow: 0 0 6px #00aaff66;
     }
 
     .qna-list {
@@ -52,17 +61,34 @@
       border-radius: 12px;
       padding: 16px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: fadeSlide 0.4s ease-out forwards;
     }
 
     .qna-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-4px) scale(1.01);
     }
 
     .qna-meta {
       font-size: 13px;
       color: #555;
       margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .qna-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .material-symbols-outlined {
+      font-size: 16px;
+      vertical-align: middle;
+      color: #00aaff;
     }
 
     .question {
@@ -73,6 +99,64 @@
 
     .answer {
       color: #333;
+    }
+
+    .pagination {
+      margin-top: 30px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .pagination button {
+      padding: 8px 14px;
+      background-color: #00aaff;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .pagination button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff6666;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      opacity: 0;
+      animation: slideToast 3s ease-in-out forwards;
+      z-index: 999;
+      font-size: 14px;
+    }
+
+    @keyframes fadeSlide {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes slideToast {
+      0% { opacity: 0; transform: translate(-50%, 20px); }
+      10% { opacity: 1; transform: translate(-50%, 0); }
+      90% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, 20px); }
     }
 
     @media (max-width: 500px) {
@@ -99,21 +183,18 @@
   <h1>Swarup QnA</h1>
 
   <div class="filters">
-    <select id="filterClass">
-      <option value="">All Classes</option>
-    </select>
-    <select id="filterSubject">
-      <option value="">All Subjects</option>
-    </select>
-    <select id="filterChapter">
-      <option value="">All Chapters</option>
-    </select>
-    <select id="filterMarks">
-      <option value="">All Marks</option>
-    </select>
+    <select id="filterClass"><option value="">All Classes</option></select>
+    <select id="filterSubject"><option value="">All Subjects</option></select>
+    <select id="filterChapter"><option value="">All Chapters</option></select>
+    <select id="filterMarks"><option value="">All Marks</option></select>
   </div>
 
   <div class="qna-list" id="qnaList">Loading...</div>
+
+  <div class="pagination">
+    <button id="prevBtn">Previous</button>
+    <button id="nextBtn">Next</button>
+  </div>
 
   <script type="module">
     import { db, collection, getDocs } from './firebase.js';
@@ -124,14 +205,19 @@
     const filterSubject = document.getElementById('filterSubject');
     const filterChapter = document.getElementById('filterChapter');
     const filterMarks = document.getElementById('filterMarks');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
     let allQnAs = [];
+    let filteredQnAs = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
 
     async function loadQnAs() {
       const snapshot = await getDocs(qnaRef);
       allQnAs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       populateFilters();
-      displayQnAs(allQnAs);
+      applyFilters();
     }
 
     function populateFilters() {
@@ -164,21 +250,35 @@
 
     function displayQnAs(qnas) {
       qnaList.innerHTML = "";
+
       if (qnas.length === 0) {
-        qnaList.innerHTML = "<p>No QnA found.</p>";
+        showToast("No QnA found for the selected filters.");
         return;
       }
 
-      qnas.forEach(({ class: cls, subject, chapter, marks, question, answer }) => {
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageItems = qnas.slice(start, end);
+
+      pageItems.forEach(({ class: cls, subject, chapter, marks, question, answer }) => {
         const card = document.createElement("div");
         card.className = "qna-card";
+        card.style.animationDelay = `${Math.random() * 0.3}s`;
         card.innerHTML = `
-          <div class="qna-meta">Class: ${cls} | Subject: ${subject} | Chapter: ${chapter} | Marks: ${marks}</div>
+          <div class="qna-meta">
+            <span><span class="material-symbols-outlined">school</span> Class: ${cls}</span>
+            <span><span class="material-symbols-outlined">menu_book</span> Subject: ${subject}</span>
+            <span><span class="material-symbols-outlined">bookmark</span> Chapter: ${chapter}</span>
+            <span><span class="material-symbols-outlined">emoji_events</span> Marks: ${marks}</span>
+          </div>
           <div class="question">Q: ${question}</div>
           <div class="answer">Ans: ${answer}</div>
         `;
         qnaList.appendChild(card);
       });
+
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = end >= qnas.length;
     }
 
     function applyFilters() {
@@ -187,15 +287,39 @@
       const selectedChapter = filterChapter.value;
       const selectedMarks = filterMarks.value;
 
-      const filtered = allQnAs.filter(q => {
+      filteredQnAs = allQnAs.filter(q => {
         return (!selectedClass || q.class === selectedClass) &&
                (!selectedSubject || q.subject === selectedSubject) &&
                (!selectedChapter || q.chapter === selectedChapter) &&
                (!selectedMarks || q.marks == selectedMarks);
       });
 
-      displayQnAs(filtered);
+      currentPage = 1;
+      displayQnAs(filteredQnAs);
     }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => document.body.removeChild(toast), 3000);
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        displayQnAs(filteredQnAs);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(filteredQnAs.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        displayQnAs(filteredQnAs);
+      }
+    });
 
     filterClass.addEventListener('change', applyFilters);
     filterSubject.addEventListener('change', applyFilters);
