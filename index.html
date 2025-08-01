@@ -66,16 +66,18 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.12);
     }
 
+    .qna-meta-wrapper {
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
     .qna-meta {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 8px;
+      min-width: 500px;
+      gap: 24px;
       font-size: 14px;
       color: #444;
       margin-bottom: 10px;
-      border-bottom: 1px solid #e0e0e0;
-      padding-bottom: 6px;
     }
 
     .qna-meta span {
@@ -88,6 +90,12 @@
     .material-symbols-outlined {
       font-size: 18px;
       color: #00796b;
+    }
+
+    .divider {
+      height: 1px;
+      background-color: #ddd;
+      margin: 0 -20px 12px;
     }
 
     .question {
@@ -138,11 +146,6 @@
       select {
         font-size: 14px;
         padding: 8px;
-      }
-
-      .qna-meta {
-        flex-direction: column;
-        gap: 6px;
       }
     }
   </style>
@@ -231,12 +234,15 @@
         const card = document.createElement("div");
         card.className = "qna-card";
         card.innerHTML = `
-          <div class="qna-meta">
-            <span><span class="material-symbols-outlined">school</span> Class: ${cls}</span>
-            <span><span class="material-symbols-outlined">menu_book</span> Subject: ${subject}</span>
-            <span><span class="material-symbols-outlined">bookmark</span> Chapter: ${chapter}</span>
-            <span><span class="material-symbols-outlined">star</span> Marks: ${marks}</span>
+          <div class="qna-meta-wrapper">
+            <div class="qna-meta">
+              <span><span class="material-symbols-outlined">school</span> Class: ${cls}</span>
+              <span><span class="material-symbols-outlined">menu_book</span> Subject: ${subject}</span>
+              <span><span class="material-symbols-outlined">bookmark</span> Chapter: ${chapter}</span>
+              <span><span class="material-symbols-outlined">star</span> Marks: ${marks}</span>
+            </div>
           </div>
+          <div class="divider"></div>
           <div class="question">Q: ${question}</div>
           <div class="answer">Ans: ${answer}</div>
         `;
