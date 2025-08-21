@@ -485,6 +485,7 @@
             <span class="nav-label">Profile</span>
         </a>
     </nav>
+
     <script>
         // Your Firebase configuration
         const firebaseConfig = {
@@ -501,7 +502,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // This array should correspond to the images you have in your assets folder.
+        // Array of profile images
         const profileImages = [
             'assets/profile1.png', 'assets/profile2.png', 'assets/profile3.png',
             'assets/profile4.png', 'assets/profile5.png', 'assets/profile6.png',
@@ -511,28 +512,36 @@
 
         const getRandomProfileImage = () => {
             const randomIndex = Math.floor(Math.random() * profileImages.length);
-            return profileImages.at(randomIndex);
+            return profileImages[randomIndex];
         };
 
         // Get the main body element and the content container
         const body = document.body;
         const content = document.querySelector('.content');
 
-        // Check user authentication status
+        /**
+         * Checks user authentication status and loads profile data if authenticated.
+         */
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 // User is signed in. Fetch and display profile data.
+                console.log('User authenticated:', user.uid);
                 await fetchProfileData(user.uid);
                 // Hide skeleton and show content after data is loaded
                 body.classList.remove('loading');
                 content.classList.remove('hidden');
             } else {
                 // No user is signed in. Redirect to login page.
+                console.log('No user authenticated. Redirecting to login.');
                 alert('Please log in to view your profile.');
                 window.location.href = 'auth.html';
             }
         });
 
+        /**
+         * Fetches and displays the user's profile data from Firestore.
+         * @param {string} userId The ID of the authenticated user.
+         */
         const fetchProfileData = async (userId) => {
             try {
                 // Fetch user data from Firestore
@@ -548,7 +557,7 @@
                     document.getElementById('profile-role').textContent = formatRole(userData.role);
                     document.getElementById('profile-bio').textContent = userData.bio || 'No bio provided.';
 
-                    // Show admin badge if user is admin or super_admin
+                    // Show admin badge if user has admin privileges
                     const adminLink = document.getElementById('admin-link');
                     if (userData.role === 'admin' || userData.role === 'super_admin') {
                         adminLink.style.display = 'inline-flex';
@@ -570,17 +579,22 @@
                     document.getElementById('stat-answers').textContent = answersSnapshot.size;
                     populateContributions('answers-list', answersSnapshot);
                 } else {
-                    console.error('User document not found.');
+                    console.error('User document not found for ID:', userId);
                     alert('User data not found. Please log in again.');
                     auth.signOut();
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
-                alert('An error occurred while loading your profile.');
+                alert('An error occurred while loading your profile. Please try again.');
                 auth.signOut();
             }
         };
 
+        /**
+         * Formats the user's role for display.
+         * @param {string} role The role string from Firestore.
+         * @returns {string} The formatted role string.
+         */
         const formatRole = (role) => {
             switch (role) {
                 case 'super_admin':
@@ -596,12 +610,22 @@
             }
         };
 
+        /**
+         * Populates a list with user contributions (questions or answers).
+         * @param {string} listId The ID of the <ul> element to populate.
+         * @param {object} snapshot The Firestore query snapshot.
+         */
         const populateContributions = (listId, snapshot) => {
             const listElement = document.getElementById(listId);
+            if (!listElement) return; // Add a check to prevent errors
+
             listElement.innerHTML = '';
 
             if (snapshot.empty) {
-                listElement.innerHTML = `<li><p class="contribution-meta">No contributions yet.</p></li>`;
+                const emptyMessage = document.createElement('li');
+                emptyMessage.className = 'contribution-item';
+                emptyMessage.innerHTML = `<p class="contribution-meta">No contributions yet.</p>`;
+                listElement.appendChild(emptyMessage);
                 return;
             }
 
@@ -610,18 +634,22 @@
                 const listItem = document.createElement('li');
                 listItem.className = 'contribution-item';
 
+                // Determine the title based on the contribution type
                 let title = '';
                 if (listId === 'questions-list') {
                     title = data.title;
                 } else {
+                    // For answers, we need the question's title. Assuming a 'questionTitle' field exists.
+                    // This is a good practice to denormalize data for easier fetching.
                     title = `Answer to: ${data.questionTitle || 'N/A'}`;
                 }
 
+                // Format the timestamp
+                const date = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : 'Date N/A';
+
                 listItem.innerHTML = `
                     <p class="contribution-title">${title}</p>
-                    <p class="contribution-meta">
-                        ${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : ''}
-                    </p>
+                    <p class="contribution-meta">${date}</p>
                 `;
                 listElement.appendChild(listItem);
             });
