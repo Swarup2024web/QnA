@@ -112,21 +112,6 @@
             margin: 0;
         }
 
-        .rank-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: var(--text-color);
-        }
-
-        .rank-section .rank-label {
-            font-weight: 500;
-            color: var(--light-text);
-        }
-
         .profile-bio {
             font-size: 0.9rem;
             color: var(--text-color);
@@ -135,29 +120,23 @@
             text-align: center;
             white-space: pre-line;
         }
-        
-        .user-rank-display {
+
+        .user-ranks-grid {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #e8f5e9;
-            border-radius: 8px;
-            border: 1px solid #c8e6c9;
-            text-align: center;
-            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
         }
 
-        .user-rank-display .rank-icon {
-            font-size: 2.5rem;
-            color: #4caf50;
-        }
-        
-        .user-rank-display .rank-text {
-            font-size: 1.2rem;
-            font-weight: 700;
+        .user-rank-card {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
             color: #2e7d32;
-            margin-top: 5px;
         }
 
         .stats-grid {
@@ -593,8 +572,7 @@
                 <h1 class="profile-username" id="profile-username"></h1>
             </div>
             <p class="profile-bio" id="profile-bio"></p>
-            <div id="user-rank-container">
-                </div>
+            <div id="user-ranks-display" class="user-ranks-grid"></div>
         </div>
         <div class="stats-grid">
             <div class="stat-card">
@@ -611,8 +589,7 @@
             </div>
         </div>
         
-        <div class="profile-options" id="profile-options-list">
-            </div>
+        <div class="profile-options" id="profile-options-list"></div>
 
         <div class="user-contributions">
             <div id="my-questions">
@@ -697,7 +674,7 @@
         const modal = document.getElementById('edit-profile-modal');
         const bioTextarea = document.getElementById('bio-textarea');
         const profileBioElement = document.getElementById('profile-bio');
-        const userRankContainer = document.getElementById('user-rank-container');
+        const userRanksDisplay = document.getElementById('user-ranks-display');
 
         let currentUserId = null;
 
@@ -722,24 +699,6 @@
                 // Return an empty array to prevent the app from crashing
                 return [];
             }
-        };
-
-        /**
-         * Determines the user's rank based on their points and the fetched ranks.
-         * @param {number} userPoints The user's current points.
-         * @param {Array} ranks The array of rank objects.
-         * @returns {string} The name of the user's rank.
-         */
-        const getUserRank = (userPoints, ranks) => {
-            let userRank = 'Unranked';
-            for (const rank of ranks) {
-                if (userPoints >= rank.points) {
-                    userRank = rank.name;
-                } else {
-                    break;
-                }
-            }
-            return userRank;
         };
 
         /**
@@ -784,27 +743,25 @@
                 }
                 
                 const userData = userDoc.data();
+                
+                // User stats from user document
                 const userPoints = userData.points || 0;
-                const userRank = getUserRank(userPoints, ranks);
+                const userQuestions = userData.questions || 0;
+                const userAnswers = userData.answers || 0;
+                const userBestAnswers = userData.best_answers || 0;
 
                 document.getElementById('profile-image').src = getRandomProfileImage();
                 document.getElementById('profile-username').textContent = userData.username;
                 profileBioElement.textContent = userData.bio || 'No bio provided.';
+
+                // Update stat cards
                 document.getElementById('stat-points').textContent = userPoints;
-                document.getElementById('stat-questions').textContent = questionsSnapshot.size;
-                document.getElementById('stat-answers').textContent = answersSnapshot.size;
+                document.getElementById('stat-questions').textContent = userQuestions;
+                document.getElementById('stat-answers').textContent = userAnswers;
                 
-                // Display the determined rank
-                if (userRank !== 'Unranked') {
-                    userRankContainer.innerHTML = `
-                        <div class="user-rank-display">
-                            <span class="material-symbols-outlined rank-icon">military_tech</span>
-                            <span class="rank-text">${userRank}</span>
-                        </div>
-                    `;
-                } else {
-                    userRankContainer.innerHTML = '';
-                }
+                // Get and display multiple ranks
+                const userRanks = getMultipleUserRanks(userData, ranks);
+                displayRanks(userRanks);
 
                 populateContributions('questions-list', questionsSnapshot);
                 populateContributions('answers-list', answersSnapshot);
@@ -814,6 +771,44 @@
                 console.error('Error fetching profile data:', error);
                 throw error;
             }
+        };
+
+        const getMultipleUserRanks = (userData, ranks) => {
+            const userRanks = [];
+            
+            // Map the user data fields to the rank criteria names
+            const criteriaMap = {
+                points: userData.points || 0,
+                questions: userData.questions || 0,
+                answers: userData.answers || 0,
+                bestAnswers: userData.best_answers || 0
+            };
+
+            const criteriaKeys = ['points', 'questions', 'answers', 'bestAnswers'];
+
+            for (const key of criteriaKeys) {
+                const userValue = criteriaMap[key];
+                const matchingRank = ranks.find(rank => rank[key] && userValue >= rank[key]);
+                if (matchingRank) {
+                    userRanks.push({ name: matchingRank.name, type: key });
+                }
+            }
+            return userRanks;
+        };
+
+        const displayRanks = (ranks) => {
+            userRanksDisplay.innerHTML = '';
+            if (ranks.length === 0) {
+                userRanksDisplay.innerHTML = `<div class="user-rank-card">Unranked</div>`;
+                return;
+            }
+
+            ranks.forEach(rank => {
+                const rankCard = document.createElement('div');
+                rankCard.className = 'user-rank-card';
+                rankCard.textContent = rank.name;
+                userRanksDisplay.appendChild(rankCard);
+            });
         };
 
         const populateContributions = (listId, snapshot) => {
