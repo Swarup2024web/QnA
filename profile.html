@@ -42,9 +42,8 @@
             padding: 15px 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
-            justify-content: center; /* Center the content horizontally */
+            justify-content: center;
             align-items: center;
-            gap: 20px;
         }
 
         .header h1 {
@@ -112,8 +111,7 @@
             color: var(--light-text);
             margin: 0;
         }
-        
-        /* New nested rank display styles */
+
         .rank-section {
             display: flex;
             flex-direction: column;
@@ -123,6 +121,7 @@
             font-size: 0.9rem;
             color: var(--text-color);
         }
+
         .rank-section .rank-label {
             font-weight: 500;
             color: var(--light-text);
@@ -133,9 +132,35 @@
             color: var(--text-color);
             max-width: 600px;
             margin: 15px 0 0;
-            text-align: center; /* Centering the bio text */
+            text-align: center;
             white-space: pre-line;
         }
+        
+        /* New rank display styles */
+        .user-rank-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #e8f5e9; /* Light green background */
+            border-radius: 8px;
+            border: 1px solid #c8e6c9;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .user-rank-display .rank-icon {
+            font-size: 2.5rem;
+            color: #4caf50; /* Green icon color */
+        }
+        
+        .user-rank-display .rank-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2e7d32; /* Darker green for text */
+            margin-top: 5px;
+        }
+        /* End of new rank display styles */
 
         .stats-grid {
             display: grid;
@@ -233,7 +258,7 @@
             font-size: 0.8rem;
         }
 
-        /* --- New/Modified Styles --- */
+        /* Profile options cards (no change) */
         .profile-options {
             display: flex;
             flex-direction: column;
@@ -280,7 +305,7 @@
             color: var(--light-text);
         }
 
-        /* --- Modal for Edit Profile --- */
+        /* Modal for Edit Profile (no change) */
         .modal {
             position: fixed;
             top: 0;
@@ -374,7 +399,7 @@
             color: var(--text-color);
         }
 
-        /* --- Skeleton Loading Styles --- */
+        /* Skeleton Loading Styles (no change) */
         .skeleton {
             background: #f0f0f0;
             background-image: linear-gradient(to right, #f0f0f0 0%, #e0e0e0 20%, #f0f0f0 40%, #f0f0f0 100%);
@@ -436,6 +461,13 @@
             width: 100%;
             height: 12px;
             margin-top: 20px;
+        }
+        
+        .skeleton-rank-display {
+            width: 150px;
+            height: 40px;
+            border-radius: 8px;
+            margin-top: 10px;
         }
 
         .skeleton-option-card {
@@ -511,12 +543,9 @@
             <div class="skeleton skeleton-username"></div>
             <div class="skeleton skeleton-role"></div>
             <div class="skeleton skeleton-bio" style="width: 80%;"></div>
+            <div class="skeleton skeleton-rank-display"></div>
         </div>
         <div class="skeleton-stats-grid">
-            <div class="skeleton-stat-card">
-                <div class="skeleton skeleton-stat-value"></div>
-                <div class="skeleton skeleton-stat-label"></div>
-            </div>
             <div class="skeleton-stat-card">
                 <div class="skeleton skeleton-stat-value"></div>
                 <div class="skeleton skeleton-stat-label"></div>
@@ -570,13 +599,10 @@
             </div>
             <div class="profile-username-container">
                 <h1 class="profile-username" id="profile-username"></h1>
-                <div class="rank-section">
-                    <span class="rank-label">Rank:</span>
-                    <span id="stat-rank">N/A</span>
-                </div>
             </div>
-            <p class="profile-role" id="profile-role"></p>
             <p class="profile-bio" id="profile-bio"></p>
+            <div id="user-rank-container">
+                </div>
         </div>
         <div class="stats-grid">
             <div class="stat-card">
@@ -680,6 +706,7 @@
         const modal = document.getElementById('edit-profile-modal');
         const bioTextarea = document.getElementById('bio-textarea');
         const profileBioElement = document.getElementById('profile-bio');
+        const userRankContainer = document.getElementById('user-rank-container');
 
         let currentUserId = null;
 
@@ -689,6 +716,33 @@
         const showContent = () => {
             loadingContainer.classList.add('hidden');
             mainContent.classList.remove('hidden');
+        };
+
+        /**
+         * Fetches all ranks from Firestore, sorted by points.
+         * @returns {Array} An array of rank objects.
+         */
+        const fetchRanks = async () => {
+            const ranksSnapshot = await db.collection('ranks').orderBy('points', 'asc').get();
+            return ranksSnapshot.docs.map(doc => doc.data());
+        };
+
+        /**
+         * Determines the user's rank based on their points and the fetched ranks.
+         * @param {number} userPoints The user's current points.
+         * @param {Array} ranks The array of rank objects.
+         * @returns {string} The name of the user's rank.
+         */
+        const getUserRank = (userPoints, ranks) => {
+            let userRank = 'Unranked'; // Default rank
+            for (const rank of ranks) {
+                if (userPoints >= rank.points) {
+                    userRank = rank.name;
+                } else {
+                    break;
+                }
+            }
+            return userRank;
         };
 
         /**
@@ -718,22 +772,33 @@
          */
         const fetchProfileData = async (userId) => {
             try {
-                const [userDoc, questionsSnapshot, answersSnapshot] = await Promise.all([
+                const [userDoc, questionsSnapshot, answersSnapshot, ranks] = await Promise.all([
                     db.collection('users').doc(userId).get(),
                     db.collection('questions').where('authorId', '==', userId).get(),
-                    db.collection('answers').where('authorId', '==', userId).get()
+                    db.collection('answers').where('authorId', '==', userId).get(),
+                    fetchRanks() // Fetch ranks concurrently
                 ]);
 
                 if (userDoc.exists) {
                     const userData = userDoc.data();
+                    const userPoints = userData.points || 0;
+                    const userRank = getUserRank(userPoints, ranks);
+
+                    // Update UI with user data
                     document.getElementById('profile-image').src = getRandomProfileImage();
                     document.getElementById('profile-username').textContent = userData.username;
-                    document.getElementById('profile-role').textContent = formatRole(userData.role);
                     profileBioElement.textContent = userData.bio || 'No bio provided.';
-                    document.getElementById('stat-points').textContent = userData.points || 0;
-                    document.getElementById('stat-rank').textContent = userData.rank || 'Student';
+                    document.getElementById('stat-points').textContent = userPoints;
                     document.getElementById('stat-questions').textContent = questionsSnapshot.size;
                     document.getElementById('stat-answers').textContent = answersSnapshot.size;
+                    
+                    // Display the determined rank
+                    userRankContainer.innerHTML = `
+                        <div class="user-rank-display">
+                            <span class="material-symbols-outlined rank-icon">military_tech</span>
+                            <span class="rank-text">${userRank}</span>
+                        </div>
+                    `;
 
                     populateContributions('questions-list', questionsSnapshot);
                     populateContributions('answers-list', answersSnapshot);
@@ -745,21 +810,6 @@
             } catch (error) {
                 console.error('Error fetching profile data:', error);
                 throw error;
-            }
-        };
-
-        const formatRole = (role) => {
-            switch (role) {
-                case 'super_admin':
-                    return 'Super Administrator';
-                case 'admin':
-                    return 'Administrator';
-                case 'user':
-                    return 'Contributor';
-                case 'teacher':
-                    return 'Teacher';
-                default:
-                    return role.charAt(0).toUpperCase() + role.slice(1);
             }
         };
 
