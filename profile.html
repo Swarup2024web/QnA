@@ -136,13 +136,12 @@
             white-space: pre-line;
         }
         
-        /* New rank display styles */
         .user-rank-display {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 10px 20px;
-            background-color: #e8f5e9; /* Light green background */
+            background-color: #e8f5e9;
             border-radius: 8px;
             border: 1px solid #c8e6c9;
             text-align: center;
@@ -151,16 +150,15 @@
 
         .user-rank-display .rank-icon {
             font-size: 2.5rem;
-            color: #4caf50; /* Green icon color */
+            color: #4caf50;
         }
         
         .user-rank-display .rank-text {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #2e7d32; /* Darker green for text */
+            color: #2e7d32;
             margin-top: 5px;
         }
-        /* End of new rank display styles */
 
         .stats-grid {
             display: grid;
@@ -258,7 +256,7 @@
             font-size: 0.8rem;
         }
 
-        /* Profile options cards (no change) */
+        /* Profile options cards */
         .profile-options {
             display: flex;
             flex-direction: column;
@@ -305,7 +303,7 @@
             color: var(--light-text);
         }
 
-        /* Modal for Edit Profile (no change) */
+        /* Modal for Edit Profile */
         .modal {
             position: fixed;
             top: 0;
@@ -399,7 +397,7 @@
             color: var(--text-color);
         }
 
-        /* Skeleton Loading Styles (no change) */
+        /* Skeleton Loading Styles */
         .skeleton {
             background: #f0f0f0;
             background-image: linear-gradient(to right, #f0f0f0 0%, #e0e0e0 20%, #f0f0f0 40%, #f0f0f0 100%);
@@ -468,12 +466,6 @@
             height: 40px;
             border-radius: 8px;
             margin-top: 10px;
-        }
-
-        .skeleton-option-card {
-            width: 100%;
-            height: 50px;
-            border-radius: 8px;
         }
 
         .skeleton-stats-grid {
@@ -682,7 +674,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Array of profile images fetched from a hypothetical GitHub repo
         const profileImages = [
             'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile1.png',
             'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile2.png',
@@ -723,8 +714,14 @@
          * @returns {Array} An array of rank objects.
          */
         const fetchRanks = async () => {
-            const ranksSnapshot = await db.collection('ranks').orderBy('points', 'asc').get();
-            return ranksSnapshot.docs.map(doc => doc.data());
+            try {
+                const ranksSnapshot = await db.collection('ranks').orderBy('points', 'asc').get();
+                return ranksSnapshot.docs.map(doc => doc.data());
+            } catch (error) {
+                console.error('Error fetching ranks:', error);
+                // Return an empty array to prevent the app from crashing
+                return [];
+            }
         };
 
         /**
@@ -734,7 +731,7 @@
          * @returns {string} The name of the user's rank.
          */
         const getUserRank = (userPoints, ranks) => {
-            let userRank = 'Unranked'; // Default rank
+            let userRank = 'Unranked';
             for (const rank of ranks) {
                 if (userPoints >= rank.points) {
                     userRank = rank.name;
@@ -757,7 +754,9 @@
                 } catch (error) {
                     console.error('Error during profile loading:', error);
                     alert('An error occurred while loading your profile. Please try again.');
+                    // Redirect to auth page on critical error
                     auth.signOut();
+                    window.location.href = 'auth.html';
                 }
             } else {
                 console.log('No user authenticated. Redirecting to login.');
@@ -776,37 +775,41 @@
                     db.collection('users').doc(userId).get(),
                     db.collection('questions').where('authorId', '==', userId).get(),
                     db.collection('answers').where('authorId', '==', userId).get(),
-                    fetchRanks() // Fetch ranks concurrently
+                    fetchRanks()
                 ]);
 
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    const userPoints = userData.points || 0;
-                    const userRank = getUserRank(userPoints, ranks);
+                if (!userDoc.exists) {
+                    console.error('User document not found for ID:', userId);
+                    throw new Error('User data not found.');
+                }
+                
+                const userData = userDoc.data();
+                const userPoints = userData.points || 0;
+                const userRank = getUserRank(userPoints, ranks);
 
-                    // Update UI with user data
-                    document.getElementById('profile-image').src = getRandomProfileImage();
-                    document.getElementById('profile-username').textContent = userData.username;
-                    profileBioElement.textContent = userData.bio || 'No bio provided.';
-                    document.getElementById('stat-points').textContent = userPoints;
-                    document.getElementById('stat-questions').textContent = questionsSnapshot.size;
-                    document.getElementById('stat-answers').textContent = answersSnapshot.size;
-                    
-                    // Display the determined rank
+                document.getElementById('profile-image').src = getRandomProfileImage();
+                document.getElementById('profile-username').textContent = userData.username;
+                profileBioElement.textContent = userData.bio || 'No bio provided.';
+                document.getElementById('stat-points').textContent = userPoints;
+                document.getElementById('stat-questions').textContent = questionsSnapshot.size;
+                document.getElementById('stat-answers').textContent = answersSnapshot.size;
+                
+                // Display the determined rank
+                if (userRank !== 'Unranked') {
                     userRankContainer.innerHTML = `
                         <div class="user-rank-display">
                             <span class="material-symbols-outlined rank-icon">military_tech</span>
                             <span class="rank-text">${userRank}</span>
                         </div>
                     `;
-
-                    populateContributions('questions-list', questionsSnapshot);
-                    populateContributions('answers-list', answersSnapshot);
-                    populateProfileOptions(userData.role);
                 } else {
-                    console.error('User document not found for ID:', userId);
-                    throw new Error('User data not found.');
+                    userRankContainer.innerHTML = '';
                 }
+
+                populateContributions('questions-list', questionsSnapshot);
+                populateContributions('answers-list', answersSnapshot);
+                populateProfileOptions(userData.role);
+
             } catch (error) {
                 console.error('Error fetching profile data:', error);
                 throw error;
