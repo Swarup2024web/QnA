@@ -238,6 +238,147 @@
             font-size: 0.8rem;
         }
 
+        /* --- New/Modified Styles --- */
+        .profile-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background-color: var(--card-background);
+            border: 1px solid var(--background-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .option-card:hover {
+            background-color: var(--background-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-icon {
+            color: var(--accent-color);
+            font-size: 24px;
+        }
+
+        .option-text {
+            font-weight: 500;
+        }
+
+        .right-arrow {
+            color: var(--light-text);
+        }
+
+        /* --- Modal for Edit Profile --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--background-color);
+            padding-bottom: 10px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group textarea {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .save-btn {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .cancel-btn {
+            background-color: #e0e0e0;
+            color: var(--text-color);
+        }
+
         /* --- Skeleton Loading Styles --- */
         .skeleton {
             background: #f0f0f0;
@@ -306,12 +447,10 @@
             margin-top: 20px;
         }
 
-        .skeleton-logout-btn {
-            width: 100px;
-            height: 40px;
+        .skeleton-option-card {
+            width: 100%;
+            height: 50px;
             border-radius: 8px;
-            align-self: center;
-            margin-top: 20px;
         }
 
         .skeleton-stats-grid {
@@ -372,8 +511,6 @@
             <div class="skeleton skeleton-username"></div>
             <div class="skeleton skeleton-role"></div>
             <div class="skeleton skeleton-bio" style="width: 80%;"></div>
-            <div class="skeleton skeleton-bio" style="width: 70%;"></div>
-            <div class="skeleton skeleton-logout-btn"></div>
         </div>
         <div class="skeleton-stats-grid">
             <div class="skeleton-stat-card">
@@ -392,6 +529,11 @@
                 <div class="skeleton skeleton-stat-value"></div>
                 <div class="skeleton skeleton-stat-label"></div>
             </div>
+        </div>
+        <div class="profile-options">
+            <div class="skeleton skeleton-option-card"></div>
+            <div class="skeleton skeleton-option-card"></div>
+            <div class="skeleton skeleton-option-card"></div>
         </div>
         <div class="user-contributions">
             <h3><div class="skeleton skeleton-line" style="width: 120px;"></div></h3>
@@ -432,13 +574,9 @@
                 </div>
                 <div class="profile-username-container">
                     <h1 class="profile-username" id="profile-username"></h1>
-                    <a id="admin-link" href="admin.html" class="admin-badge" style="display: none;">
-                        <span class="material-symbols-outlined" title="Admin Panel">verified_user</span>
-                    </a>
                 </div>
                 <p class="profile-role" id="profile-role"></p>
                 <p class="profile-bio" id="profile-bio"></p>
-                <button class="logout-button" id="logout-btn">Log Out</button>
             </div>
             <div class="stats-grid">
                 <div class="stat-card">
@@ -458,6 +596,10 @@
                     <div class="label">Rank</div>
                 </div>
             </div>
+            
+            <div class="profile-options" id="profile-options-list">
+                </div>
+
             <div class="user-contributions">
                 <div id="my-questions">
                     <h3>My Questions</h3>
@@ -467,6 +609,23 @@
                     <h3>My Answers</h3>
                     <ul class="contribution-list" id="answers-list"></ul>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Profile Bio</h3>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="bio-textarea">Bio</label>
+                <textarea id="bio-textarea"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="cancel-btn" id="cancel-edit-btn">Cancel</button>
+                <button class="save-btn" id="save-bio-btn">Save</button>
             </div>
         </div>
     </div>
@@ -518,18 +677,30 @@
         // Get the main body element and the content container
         const body = document.body;
         const content = document.querySelector('.content');
+        const modal = document.getElementById('edit-profile-modal');
+        const bioTextarea = document.getElementById('bio-textarea');
+        const profileBioElement = document.getElementById('profile-bio');
+
+        let currentUserId = null;
 
         /**
          * Checks user authentication status and loads profile data if authenticated.
          */
         auth.onAuthStateChanged(async (user) => {
             if (user) {
+                currentUserId = user.uid;
                 // User is signed in. Fetch and display profile data.
-                console.log('User authenticated:', user.uid);
-                await fetchProfileData(user.uid);
-                // Hide skeleton and show content after data is loaded
-                body.classList.remove('loading');
-                content.classList.remove('hidden');
+                try {
+                    console.log('User authenticated:', currentUserId);
+                    await fetchProfileData(currentUserId);
+                    // Only remove the loading state after the data has been fully loaded and rendered.
+                    body.classList.remove('loading');
+                    content.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error during profile loading:', error);
+                    alert('An error occurred while loading your profile. Please try again.');
+                    auth.signOut();
+                }
             } else {
                 // No user is signed in. Redirect to login page.
                 console.log('No user authenticated. Redirecting to login.');
@@ -544,49 +715,40 @@
          */
         const fetchProfileData = async (userId) => {
             try {
-                // Fetch user data from Firestore
-                const userDoc = await db.collection('users').doc(userId).get();
+                // Fetch all data concurrently using Promise.all
+                const [userDoc, questionsSnapshot, answersSnapshot] = await Promise.all([
+                    db.collection('users').doc(userId).get(),
+                    db.collection('questions').where('authorId', '==', userId).get(),
+                    db.collection('answers').where('authorId', '==', userId).get()
+                ]);
+
                 if (userDoc.exists) {
                     const userData = userDoc.data();
 
-                    // Set profile image
+                    // Update UI with user data
                     document.getElementById('profile-image').src = getRandomProfileImage();
-
-                    // Display profile info
                     document.getElementById('profile-username').textContent = userData.username;
                     document.getElementById('profile-role').textContent = formatRole(userData.role);
-                    document.getElementById('profile-bio').textContent = userData.bio || 'No bio provided.';
+                    profileBioElement.textContent = userData.bio || 'No bio provided.';
 
-                    // Show admin badge if user has admin privileges
-                    const adminLink = document.getElementById('admin-link');
-                    if (userData.role === 'admin' || userData.role === 'super_admin') {
-                        adminLink.style.display = 'inline-flex';
-                    } else {
-                        adminLink.style.display = 'none';
-                    }
-
-                    // Display stats
                     document.getElementById('stat-points').textContent = userData.points || 0;
                     document.getElementById('stat-rank').textContent = userData.rank || 'Student';
-
-                    // Fetch and count user's questions
-                    const questionsSnapshot = await db.collection('questions').where('authorId', '==', userId).get();
                     document.getElementById('stat-questions').textContent = questionsSnapshot.size;
-                    populateContributions('questions-list', questionsSnapshot);
-
-                    // Fetch and count user's answers
-                    const answersSnapshot = await db.collection('answers').where('authorId', '==', userId).get();
                     document.getElementById('stat-answers').textContent = answersSnapshot.size;
+
+                    // Populate contribution lists
+                    populateContributions('questions-list', questionsSnapshot);
                     populateContributions('answers-list', answersSnapshot);
+
+                    // Populate profile options
+                    populateProfileOptions(userData.role);
                 } else {
                     console.error('User document not found for ID:', userId);
-                    alert('User data not found. Please log in again.');
-                    auth.signOut();
+                    throw new Error('User data not found.');
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
-                alert('An error occurred while loading your profile. Please try again.');
-                auth.signOut();
+                throw error; // Propagate the error to the calling function
             }
         };
 
@@ -624,7 +786,7 @@
             if (snapshot.empty) {
                 const emptyMessage = document.createElement('li');
                 emptyMessage.className = 'contribution-item';
-                emptyMessage.innerHTML = `<p class="contribution-meta">No contributions yet.</p>`;
+                emptyMessage.innerHTML = `<p class="contribution-meta">No contributions yet.</p></li>`;
                 listElement.appendChild(emptyMessage);
                 return;
             }
@@ -639,8 +801,6 @@
                 if (listId === 'questions-list') {
                     title = data.title;
                 } else {
-                    // For answers, we need the question's title. Assuming a 'questionTitle' field exists.
-                    // This is a good practice to denormalize data for easier fetching.
                     title = `Answer to: ${data.questionTitle || 'N/A'}`;
                 }
 
@@ -655,8 +815,58 @@
             });
         };
 
-        // Handle Logout
-        document.getElementById('logout-btn').addEventListener('click', () => {
+        /**
+         * Dynamically populates the profile options list based on user role.
+         * @param {string} userRole The role of the authenticated user.
+         */
+        const populateProfileOptions = (userRole) => {
+            const optionsList = document.getElementById('profile-options-list');
+            optionsList.innerHTML = '';
+
+            const options = [
+                { id: 'edit-profile', text: 'Edit Profile', icon: 'edit', action: 'showModal' },
+                { id: 'contact-admin', text: 'Contact Admin', icon: 'support_agent', action: 'redirect', url: 'mailto:admin@qna-site.com' }
+            ];
+
+            if (userRole === 'admin' || userRole === 'super_admin') {
+                options.push({ id: 'admin-panel', text: 'Admin Panel', icon: 'admin_panel_settings', action: 'redirect', url: 'admin.html' });
+            }
+
+            options.push({ id: 'logout', text: 'Log Out', icon: 'logout', action: 'logout' });
+
+            options.forEach(option => {
+                const optionCard = document.createElement('div');
+                optionCard.className = 'option-card';
+                optionCard.id = option.id;
+
+                optionCard.innerHTML = `
+                    <div class="option-content">
+                        <span class="material-symbols-outlined option-icon">${option.icon}</span>
+                        <span class="option-text">${option.text}</span>
+                    </div>
+                    <span class="material-symbols-outlined right-arrow">chevron_right</span>
+                `;
+
+                optionsList.appendChild(optionCard);
+
+                // Add event listeners based on action type
+                if (option.action === 'showModal') {
+                    optionCard.addEventListener('click', () => {
+                        bioTextarea.value = profileBioElement.textContent === 'No bio provided.' ? '' : profileBioElement.textContent;
+                        modal.classList.add('open');
+                    });
+                } else if (option.action === 'redirect') {
+                    optionCard.addEventListener('click', () => window.location.href = option.url);
+                } else if (option.action === 'logout') {
+                    optionCard.addEventListener('click', handleLogout);
+                }
+            });
+        };
+
+        /**
+         * Handles the logout process.
+         */
+        const handleLogout = () => {
             auth.signOut().then(() => {
                 alert('Logged out successfully!');
                 window.location.href = 'auth.html';
@@ -664,6 +874,37 @@
                 console.error('Logout error:', error);
                 alert('An error occurred during logout.');
             });
+        };
+
+        // Modal event listeners
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            modal.classList.remove('open');
+        });
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            modal.classList.remove('open');
+        });
+
+        document.getElementById('save-bio-btn').addEventListener('click', async () => {
+            const newBio = bioTextarea.value;
+            if (newBio.trim() === profileBioElement.textContent.trim()) {
+                alert('Bio not changed. No update needed.');
+                modal.classList.remove('open');
+                return;
+            }
+
+            if (currentUserId) {
+                try {
+                    await db.collection('users').doc(currentUserId).update({
+                        bio: newBio
+                    });
+                    profileBioElement.textContent = newBio;
+                    alert('Bio updated successfully!');
+                    modal.classList.remove('open');
+                } catch (error) {
+                    console.error('Error updating bio:', error);
+                    alert('Failed to update bio. Please try again.');
+                }
+            }
         });
     </script>
 </body>
