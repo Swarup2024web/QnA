@@ -30,9 +30,7 @@
             background-color: var(--card-background);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
         }
         .header h1 {
             margin: 0;
@@ -40,11 +38,15 @@
             color: var(--primary-color);
         }
         .header-meta {
-            width: 100%;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             margin-top: 10px;
+        }
+        .header-meta .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
         }
         .header-meta span {
             font-size: 1em;
@@ -57,17 +59,33 @@
             padding: 8px 12px;
             border-radius: 4px;
             cursor: pointer;
-            margin-left: 15px;
             font-size: 0.9em;
+            margin-left: 10px;
+        }
+        
+        @media (min-width: 768px) {
+            .header-meta {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .header-meta .user-info {
+                margin-bottom: 0;
+            }
         }
 
-        .tabs {
+        .tabs-container {
             background-color: var(--primary-color);
             display: flex;
-            justify-content: center;
-            border-bottom: 3px solid var(--accent-color);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .tabs-container::-webkit-scrollbar {
+            display: none;
         }
         .tab-item {
+            flex-shrink: 0;
             padding: 15px 25px;
             color: white;
             font-weight: 500;
@@ -76,8 +94,13 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            border-bottom: 3px solid transparent;
         }
         .tab-item:hover, .tab-item.active {
+            background-color: var(--accent-color);
+            border-bottom: 3px solid #27ae60;
+        }
+        .tab-item.active {
             background-color: var(--accent-color);
         }
         .tab-item span.material-symbols-outlined {
@@ -106,6 +129,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         h2 {
@@ -138,10 +162,15 @@
         }
 
         /* Tables */
+        .table-container {
+            overflow-x: auto;
+            width: 100%;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            min-width: 600px;
         }
         th, td {
             padding: 12px 15px;
@@ -172,33 +201,50 @@
         .action-cell {
             white-space: nowrap;
         }
-
+        
         /* Rank Form */
         #rank-form-container {
+            background-color: var(--background-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 20px;
         }
         .form-row {
             display: flex;
-            gap: 15px;
-            align-items: center;
+            flex-direction: column;
+            gap: 5px;
         }
         .form-row label {
-            min-width: 120px;
+            font-weight: bold;
         }
         .form-row input, .form-row select {
-            flex-grow: 1;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
         }
+        @media (min-width: 600px) {
+            .form-row {
+                flex-direction: row;
+                align-items: center;
+                gap: 15px;
+            }
+            .form-row label {
+                min-width: 120px;
+            }
+        }
         .form-row button {
-            width: auto;
+            width: 100%;
+            margin-top: 5px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .form-actions button {
+            flex-grow: 1;
         }
 
         /* Loader and message screen styles */
@@ -245,12 +291,14 @@
         <header class="header">
             <h1>Admin Panel</h1>
             <div class="header-meta">
-                <span id="welcome-username">Welcome, Admin</span>
-                <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+                <div class="user-info">
+                    <span id="welcome-username">Welcome, Admin</span>
+                    <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+                </div>
             </div>
         </header>
 
-        <nav class="tabs">
+        <nav class="tabs-container">
             <div class="tab-item active" data-tab="dashboard">
                 <span class="material-symbols-outlined">dashboard</span>
                 Dashboard
@@ -293,9 +341,11 @@
             </section>
             
             <section id="qna" class="content-section">
-                <h2>Manage Questions & Answers</h2>
+                <div class="section-header">
+                    <h2>Manage Questions & Answers</h2>
+                </div>
                 <div id="qna-list">
-                    <p>Q&A management features will be added here later.</p>
+                    <p>Q&A management features will be implemented here. For security, these actions (like deleting content with a reason) should be handled by a Firebase Cloud Function. This section will contain a list of questions and answers with options to moderate them.</p>
                 </div>
             </section>
             
@@ -303,28 +353,29 @@
                 <div class="section-header">
                     <h2>Manage Users</h2>
                 </div>
-                <table id="user-table">
-                    <thead>
-                        <tr>
-                            <th>User ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table id="user-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </section>
             
             <section id="ranks" class="content-section">
                 <div class="section-header">
                     <h2>Manage Ranks</h2>
-                    <button class="action add" onclick="showAddRankForm()">Add New Rank</button>
                 </div>
                 
-                <div id="rank-form-container" style="display: none;">
+                <div id="rank-form-container">
                     <h3>Create New Rank</h3>
                     <div class="form-row">
                         <label for="rank-name-input">Rank Name:</label>
@@ -334,30 +385,31 @@
                         <label for="rank-metric-select">Required Criteria:</label>
                         <select id="rank-metric-select">
                             <option value="points">Points</option>
-                            <option value="questions">Questions</option>
-                            <option value="answers">Answers</option>
+                            <option value="questions">Questions Asked</option>
+                            <option value="answers">Answers Given</option>
                             <option value="bestAnswers">Best Answers</option>
                         </select>
-                        <input type="number" id="rank-value-input" placeholder="Value (e.g., 100)">
+                        <input type="number" id="rank-value-input" placeholder="Value (e.g., 100)" min="0">
                     </div>
-                    <div class="form-row">
-                        <button class="action" onclick="createRank()">Create Rank</button>
-                        <button class="action" onclick="hideAddRankForm()">Cancel</button>
+                    <div class="form-actions">
+                        <button class="action add" onclick="createRank()">Create Rank</button>
                     </div>
                 </div>
 
-                <table id="rank-table">
-                    <thead>
-                        <tr>
-                            <th>Rank Name</th>
-                            <th>Criteria</th>
-                            <th>Value</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table id="rank-table">
+                        <thead>
+                            <tr>
+                                <th>Rank Name</th>
+                                <th>Criteria</th>
+                                <th>Value</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </div>
     </div>
@@ -431,7 +483,6 @@
             });
             document.querySelector(`.tab-item[data-tab="${id}"]`).classList.add('active');
 
-            // Call specific fetch functions when a section is shown
             switch(id) {
                 case 'dashboard':
                     fetchDashboardStats();
@@ -456,21 +507,22 @@
 
         const fetchDashboardStats = async () => {
             try {
-                const statsDoc = await db.collection('stats').doc('site_summary').get();
-                if (statsDoc.exists) {
-                    const data = statsDoc.data();
-                    document.getElementById('total-users').textContent = data.totalUsers || 0;
-                    document.getElementById('total-questions').textContent = data.totalQuestions || 0;
-                    document.getElementById('total-answers').textContent = data.totalAnswers || 0;
-                    document.getElementById('total-best-answers').textContent = data.totalBestAnswers || 0;
-                } else {
-                    console.log('Stats document not found.');
-                }
+                const [usersSnapshot, questionsSnapshot, answersSnapshot, bestAnswersSnapshot] = await Promise.all([
+                    db.collection('users').get(),
+                    db.collection('questions').get(),
+                    db.collection('answers').get(),
+                    db.collection('answers').where('isBestAnswer', '==', true).get()
+                ]);
+
+                document.getElementById('total-users').textContent = usersSnapshot.size;
+                document.getElementById('total-questions').textContent = questionsSnapshot.size;
+                document.getElementById('total-answers').textContent = answersSnapshot.size;
+                document.getElementById('total-best-answers').textContent = bestAnswersSnapshot.size;
             } catch (error) {
                 console.error('Error fetching dashboard stats:', error);
             }
         };
-
+        
         const fetchAndPopulateUsers = async () => {
             const userTableBody = document.querySelector('#user-table tbody');
             userTableBody.innerHTML = '';
@@ -486,9 +538,8 @@
                             <td>${user.role}</td>
                             <td class="action-cell">
                                 <button class="action" onclick="editUserRole('${doc.id}', '${user.role}')">Edit Role</button>
-                                <button class="action" onclick="deactivateUser('${doc.id}', '${user.email}')">Deactivate</button>
                                 <button class="ban" onclick="deleteUser('${doc.id}', '${user.role}')">Delete</button>
-                                <button class="ban" onclick="banUser('${doc.id}', '${user.email}')">Ban</button>
+                                <button class="ban" onclick="banUser('${doc.id}')">Ban</button>
                             </td>
                         </tr>
                     `;
@@ -519,18 +570,12 @@
             }
         };
 
-        const deactivateUser = async (userId, userEmail) => {
-            alert('Deactivating a user requires a Firebase Cloud Function or similar backend operation. This action is not directly supported client-side.');
-            // You would need to implement a Cloud Function to disable the user in Firebase Authentication.
-        };
-
         const deleteUser = async (userId, userRole) => {
             if (currentUserRole === 'admin' && userRole === 'super_admin') {
                 alert('Admin cannot delete a Super Admin.');
                 return;
             }
             if (confirm(`Are you sure you want to permanently delete user: ${userId}? This action cannot be undone.`)) {
-                // Deletion of user account also requires a backend Cloud Function.
                 alert('User deletion requires a backend Cloud Function. This action is not directly supported client-side.');
             }
         };
@@ -552,16 +597,25 @@
             const rankTableBody = document.querySelector('#rank-table tbody');
             rankTableBody.innerHTML = '';
             try {
-                const ranksSnapshot = await db.collection('ranks').orderBy('points').get();
+                const ranksSnapshot = await db.collection('ranks').get();
                 ranksSnapshot.forEach(doc => {
                     const rank = doc.data();
-                    let criteriaText = 'No criteria';
-                    if (rank.points > 0) criteriaText = `Points`;
-                    else if (rank.questions > 0) criteriaText = `Questions`;
-                    else if (rank.answers > 0) criteriaText = `Answers`;
-                    else if (rank.bestAnswers > 0) criteriaText = `Best Answers`;
+                    let criteriaText = '';
+                    let value = 0;
                     
-                    let value = rank.points || rank.questions || rank.answers || rank.bestAnswers || 0;
+                    if (rank.points) {
+                        criteriaText = 'Points';
+                        value = rank.points;
+                    } else if (rank.questions) {
+                        criteriaText = 'Questions';
+                        value = rank.questions;
+                    } else if (rank.answers) {
+                        criteriaText = 'Answers';
+                        value = rank.answers;
+                    } else if (rank.bestAnswers) {
+                        criteriaText = 'Best Answers';
+                        value = rank.bestAnswers;
+                    }
 
                     const row = `
                         <tr>
@@ -569,7 +623,7 @@
                             <td>${criteriaText}</td>
                             <td>${value}</td>
                             <td class="action-cell">
-                                <button class="action" onclick="editRank('${doc.id}', '${rank.name}', '${criteriaText.toLowerCase().replace(/\s/g, '')}', ${value})">Edit</button>
+                                <button class="action" onclick="editRank('${doc.id}', '${rank.name}', '${criteriaText.replace(/\s/g, '')}', ${value})">Edit</button>
                                 <button class="ban" onclick="deleteRank('${doc.id}')">Delete</button>
                             </td>
                         </tr>
@@ -581,21 +635,13 @@
             }
         };
 
-        const showAddRankForm = () => {
-            document.getElementById('rank-form-container').style.display = 'flex';
-        };
-
-        const hideAddRankForm = () => {
-            document.getElementById('rank-form-container').style.display = 'none';
-        };
-
         const createRank = async () => {
             const name = document.getElementById('rank-name-input').value.trim();
             const metric = document.getElementById('rank-metric-select').value;
             const value = parseInt(document.getElementById('rank-value-input').value, 10);
 
-            if (!name || isNaN(value)) {
-                alert('Please enter a valid rank name and value.');
+            if (!name || isNaN(value) || value < 0) {
+                alert('Please enter a valid rank name and a non-negative number for the value.');
                 return;
             }
 
@@ -611,10 +657,11 @@
             try {
                 await db.collection('ranks').add(rankData);
                 alert('Rank added successfully!');
-                hideAddRankForm();
                 fetchAndPopulateRanks();
+                document.getElementById('rank-name-input').value = '';
+                document.getElementById('rank-value-input').value = '';
             } catch (error) {
-                alert('Failed to add rank.');
+                alert('Failed to add rank. Please check your Firestore rules and connection.');
                 console.error('Error adding rank:', error);
             }
         };
@@ -622,14 +669,23 @@
         const editRank = async (rankId, currentName, currentMetric, currentValue) => {
             const newName = prompt("Edit rank name:", currentName);
             if (!newName) return;
-            const newMetric = prompt(`Current metric: "${currentMetric}". Enter new metric (points, questions, answers, bestAnswers):`, currentMetric);
-            if (!newMetric || !['points', 'questions', 'answers', 'bestanswers'].includes(newMetric.toLowerCase())) {
-                alert('Invalid metric entered.');
+
+            const metricMap = {
+                'points': 'points',
+                'questions': 'questions',
+                'answers': 'answers',
+                'bestanswers': 'bestAnswers'
+            };
+            const newMetricText = prompt(`Current metric: "${currentMetric}". Enter new metric (points, questions, answers, bestAnswers):`, currentMetric);
+            const newMetric = metricMap[newMetricText.toLowerCase()];
+            if (!newMetric) {
+                alert('Invalid metric entered. Please use one of: points, questions, answers, bestAnswers');
                 return;
             }
+
             const newValue = parseInt(prompt(`Current value: "${currentValue}". Enter new value:`, currentValue), 10);
-            if (isNaN(newValue)) {
-                alert('Invalid value entered.');
+            if (isNaN(newValue) || newValue < 0) {
+                alert('Invalid value entered. Please enter a non-negative number.');
                 return;
             }
 
@@ -640,7 +696,7 @@
                 answers: 0,
                 bestAnswers: 0,
             };
-            updatedData[newMetric.toLowerCase()] = newValue;
+            updatedData[newMetric] = newValue;
 
             try {
                 await db.collection('ranks').doc(rankId).update(updatedData);
