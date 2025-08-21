@@ -3,36 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login / Sign Up</title>
+    <title>Welcome - Q&A Site</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #2980b9;
+            --background-color: #f4f7f9;
+            --card-background: #fff;
+            --text-color: #333;
+            --light-text: #7f8c8d;
+            --border-color: #e0e0e0;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f9;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            color: #333;
+            color: var(--text-color);
+            padding: 20px;
         }
 
         .auth-container {
-            background-color: #fff;
+            background-color: var(--card-background);
             padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
             text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h2 {
             margin-top: 0;
-            color: #2c3e50;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-weight: 700;
         }
 
         .form-section {
@@ -43,54 +65,78 @@
             display: block;
         }
 
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
         input[type="email"],
         input[type="password"],
         input[type="text"] {
             width: 100%;
             padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             box-sizing: border-box;
             font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
         }
 
         button {
             width: 100%;
-            padding: 12px;
-            background-color: #2980b9;
+            padding: 14px;
+            background-color: var(--accent-color);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
+            font-weight: 500;
+            margin-top: 20px;
+            transition: background-color 0.3s, transform 0.2s;
         }
 
         button:hover {
             background-color: #3498db;
+            transform: translateY(-2px);
         }
         
-        #error-message {
-            color: red;
-            margin-top: 15px;
+        .message {
+            margin-top: 20px;
+            font-size: 14px;
             min-height: 20px;
+        }
+        
+        .error-message {
+            color: var(--error-color);
+        }
+        
+        .info-message {
+            color: var(--success-color);
         }
 
         .toggle-link {
-            color: #2980b9;
+            color: var(--accent-color);
             cursor: pointer;
-            text-decoration: underline;
-            margin-top: 20px;
-            display: block;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 15px;
+            display: inline-block;
         }
         .toggle-link:hover {
-            color: #3498db;
+            text-decoration: underline;
         }
 
-        .info-message {
-            color: green;
-            margin-top: 15px;
+        .toggle-section {
+            font-size: 14px;
+            color: var(--light-text);
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -99,36 +145,52 @@
         <div id="login-section" class="form-section active">
             <h2>Log In</h2>
             <form id="login-form">
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-password" placeholder="Password" required>
+                <div class="input-group">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
                 <button type="submit">Log In</button>
             </form>
-            <a class="toggle-link" onclick="showSection('forgot-password')">Forgot Password?</a>
-            <p>Don't have an account? <a class="toggle-link" onclick="showSection('signup-section')">Sign Up</a></p>
-            <div id="login-error" class="error-message"></div>
+            <div class="message error-message" id="login-error"></div>
+            <a class="toggle-link" onclick="showSection('forgot-password-section')">Forgot password?</a>
+            <div class="toggle-section">
+                Don't have an account? <a class="toggle-link" onclick="showSection('signup-section')">Sign Up</a>
+            </div>
         </div>
 
         <div id="signup-section" class="form-section">
             <h2>Create Account</h2>
             <form id="signup-form">
-                <input type="email" id="signup-email" placeholder="Email" required>
-                <input type="text" id="signup-username" placeholder="Username" required>
-                <input type="password" id="signup-password" placeholder="Password" required>
+                <div class="input-group">
+                    <input type="email" id="signup-email" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="signup-username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="signup-password" placeholder="Password" required>
+                </div>
                 <button type="submit">Sign Up</button>
             </form>
-            <p>Already have an account? <a class="toggle-link" onclick="showSection('login-section')">Log In</a></p>
-            <div id="signup-error" class="error-message"></div>
+            <div class="message error-message" id="signup-error"></div>
+            <div class="toggle-section">
+                Already have an account? <a class="toggle-link" onclick="showSection('login-section')">Log In</a>
+            </div>
         </div>
 
         <div id="forgot-password-section" class="form-section">
             <h2>Forgot Password</h2>
             <p>Enter your email to receive a password reset link.</p>
             <form id="forgot-password-form">
-                <input type="email" id="forgot-email" placeholder="Email" required>
+                <div class="input-group">
+                    <input type="email" id="forgot-email" placeholder="Email" required>
+                </div>
                 <button type="submit">Send Reset Link</button>
             </form>
+            <div class="message info-message" id="forgot-password-message"></div>
             <a class="toggle-link" onclick="showSection('login-section')">Back to Login</a>
-            <div id="forgot-password-message" class="info-message"></div>
         </div>
     </div>
 
@@ -166,7 +228,6 @@
 
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                // Redirect to a dashboard or home page
                 alert('Logged in successfully!');
                 window.location.href = 'index.html'; // Or your main page
             } catch (error) {
@@ -187,17 +248,16 @@
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
 
-                // Add user data to Firestore
                 await db.collection('users').doc(user.uid).set({
                     email: email,
                     username: username,
-                    role: 'student', // Default role for new users
+                    role: 'student', 
                     points: 0,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 alert('Account created successfully!');
-                window.location.href = 'index.html'; // Redirect
+                window.location.href = 'index.html';
             } catch (error) {
                 errorElement.textContent = error.message;
             }
