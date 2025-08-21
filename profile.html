@@ -587,6 +587,10 @@
                 <div class="value" id="stat-answers">0</div>
                 <div class="label">Answers Given</div>
             </div>
+            <div class="stat-card">
+                <div class="value" id="stat-best-answers">0</div>
+                <div class="label">Best Answers</div>
+            </div>
         </div>
         
         <div class="profile-options" id="profile-options-list"></div>
@@ -652,16 +656,16 @@
         const db = firebase.firestore();
 
         const profileImages = [
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile1.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile2.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile3.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile4.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile5.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile6.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile7.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile8.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile9.png',
-            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile10.png'
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile1.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile2.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile3.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile4.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile5.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile6.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile7.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile8.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile9.png',
+            'https://raw.githubusercontent.com/Swarup2024web/QnA/main/assets/profile10.png'
         ];
 
         const getRandomProfileImage = () => {
@@ -759,6 +763,7 @@
                 document.getElementById('stat-points').textContent = userPoints;
                 document.getElementById('stat-questions').textContent = userQuestions;
                 document.getElementById('stat-answers').textContent = userAnswers;
+                document.getElementById('stat-best-answers').textContent = userBestAnswers;
                 
                 // Get and display multiple ranks
                 const userRanks = getMultipleUserRanks(userData, ranks);
@@ -782,10 +787,10 @@
                 points: userData.points || 0,
                 questions: userData.questions || 0,
                 answers: userData.answers || 0,
-                best_answers: userData.best_answers || 0
+                bestAnswers: userData.best_answers || 0
             };
 
-            const criteriaKeys = ['points', 'questions', 'answers', 'best_answers'];
+            const criteriaKeys = ['points', 'questions', 'answers', 'bestAnswers'];
 
             for (const key of criteriaKeys) {
                 const userValue = criteriaMap[key];
