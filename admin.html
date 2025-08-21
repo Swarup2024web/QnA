@@ -4,64 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
+        :root {
+            --primary-color: #34495e;
+            --secondary-color: #2c3e50;
+            --accent-color: #2980b9;
+            --background-color: #f4f7f9;
+            --text-color: #333;
+            --card-background: #fff;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             margin: 0;
             display: flex;
-            background-color: #f4f7f9;
-            color: #333;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
 
         .sidebar {
             width: 250px;
-            background-color: #2c3e50;
+            background-color: var(--secondary-color);
             color: white;
             padding-top: 20px;
             height: 100vh;
             position: fixed;
             top: 0;
             left: 0;
+            transform: translateX(-250px);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+        }
+        .sidebar.active {
+            transform: translateX(0);
         }
 
         .sidebar h2 {
             text-align: center;
             margin-bottom: 30px;
         }
-
         .sidebar ul {
             list-style: none;
             padding: 0;
         }
-
         .sidebar li {
             padding: 15px 20px;
             cursor: pointer;
             transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-
         .sidebar li:hover, .sidebar li.active {
-            background-color: #34495e;
+            background-color: var(--primary-color);
         }
 
         .main-content {
-            margin-left: 250px;
+            margin-left: 0;
             padding: 20px;
-            width: calc(100% - 250px);
+            width: 100%;
+        }
+        .main-content.shifted {
+            margin-left: 250px;
         }
 
         header {
-            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-background);
             padding: 20px;
             margin-bottom: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
+        .menu-toggle {
+            display: block; /* Show on mobile */
+            cursor: pointer;
+            font-size: 28px;
+            color: var(--text-color);
+        }
+        @media (min-width: 768px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 250px;
+            }
+            .menu-toggle {
+                display: none; /* Hide on larger screens */
+            }
+        }
         .content-section {
             display: none;
         }
-
         .content-section.active {
             display: block;
         }
@@ -71,51 +108,44 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
-
         .stat-card {
-            background-color: white;
+            background-color: var(--card-background);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             text-align: center;
         }
-
         .stat-card h3 {
             margin: 0 0 10px;
             font-size: 1.2em;
             color: #555;
         }
-
         .stat-card p {
             font-size: 2em;
             font-weight: bold;
-            color: #2980b9;
+            color: var(--accent-color);
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            background-color: white;
+            background-color: var(--card-background);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border-radius: 8px;
             overflow: hidden;
+            margin-top: 20px;
         }
-
         th, td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-
         th {
             background-color: #f2f2f2;
             font-weight: bold;
         }
-
         tr:hover {
             background-color: #f5f5f5;
         }
-
         button {
             padding: 8px 12px;
             border: none;
@@ -124,8 +154,7 @@
             font-size: 0.9em;
             margin-right: 5px;
         }
-
-        button.edit { background-color: #3498db; color: white; }
+        button.edit { background-color: var(--accent-color); color: white; }
         button.ban { background-color: #e74c3c; color: white; }
     </style>
 </head>
@@ -133,15 +162,28 @@
     <div class="sidebar">
         <h2>Admin Panel</h2>
         <ul>
-            <li class="active" onclick="showSection('dashboard')">Dashboard</li>
-            <li onclick="showSection('qna')">Manage Q&A</li>
-            <li onclick="showSection('users')">Manage Users</li>
-            <li onclick="showSection('ranks')">Manage Ranks</li>
+            <li class="active" onclick="showSection('dashboard')">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </li>
+            <li onclick="showSection('qna')">
+                <span class="material-symbols-outlined">forum</span>
+                Manage Q&A
+            </li>
+            <li onclick="showSection('users')">
+                <span class="material-symbols-outlined">group</span>
+                Manage Users
+            </li>
+            <li onclick="showSection('ranks')">
+                <span class="material-symbols-outlined">military_tech</span>
+                Manage Ranks
+            </li>
         </ul>
     </div>
     <div class="main-content">
         <header>
             <h1>Welcome, Admin</h1>
+            <span class="material-symbols-outlined menu-toggle" onclick="toggleMenu()">menu</span>
         </header>
 
         <section id="dashboard" class="content-section active">
@@ -194,6 +236,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Function to toggle the mobile menu
+            window.toggleMenu = () => {
+                const sidebar = document.querySelector('.sidebar');
+                sidebar.classList.toggle('active');
+            };
+
             // Function to switch between sections
             window.showSection = (id) => {
                 document.querySelectorAll('.content-section').forEach(section => {
@@ -205,15 +253,20 @@
                     item.classList.remove('active');
                 });
                 document.querySelector(`.sidebar li[onclick="showSection('${id}')"]`).classList.add('active');
+
+                // Close menu on mobile after selection
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                    toggleMenu();
+                }
             };
 
-            // Example function to fetch data for the dashboard
+            // Example function to fetch dashboard stats
             const fetchDashboardStats = async () => {
                 try {
                     // Replace with your actual Firebase Cloud Function or API endpoint
                     const response = await fetch('/api/admin/stats');
                     const data = await response.json();
-
                     document.getElementById('total-users').textContent = data.totalUsers;
                     document.getElementById('total-questions').textContent = data.totalQuestions;
                     document.getElementById('new-answers').textContent = data.newAnswersToday;
@@ -222,14 +275,13 @@
                 }
             };
 
-            // Example function to populate the user table
+            // Example function to populate user table
             const fetchAndPopulateUsers = async () => {
                 const userTableBody = document.querySelector('#user-table tbody');
-                userTableBody.innerHTML = ''; // Clear previous data
+                userTableBody.innerHTML = '';
                 try {
                     const response = await fetch('/api/admin/users');
                     const users = await response.json();
-
                     users.forEach(user => {
                         const row = `
                             <tr>
@@ -250,21 +302,19 @@
                 }
             };
 
-            // Initial data load when the page loads
+            // Initial data load
             fetchDashboardStats();
             fetchAndPopulateUsers();
-            // You would add similar functions for Q&A and Ranks
         });
 
-        // Stubs for user action functions
         const editUser = (userId) => {
             alert(`Editing user: ${userId}`);
-            // Implement API call to edit user
+            // Call API
         };
 
         const banUser = (userId) => {
             if (confirm(`Are you sure you want to ban user: ${userId}?`)) {
-                // Implement API call to ban user
+                // Call API
                 alert(`User ${userId} has been banned.`);
             }
         };
