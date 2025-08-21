@@ -4,7 +4,130 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="admin.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: #f4f7f9;
+            color: #333;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding-top: 20px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar li {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar li:hover, .sidebar li.active {
+            background-color: #34495e;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+        }
+
+        header {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .stat-card p {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-right: 5px;
+        }
+
+        button.edit { background-color: #3498db; color: white; }
+        button.ban { background-color: #e74c3c; color: white; }
+    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -69,6 +192,82 @@
         </section>
     </div>
 
-    <script src="admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Function to switch between sections
+            window.showSection = (id) => {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(id).classList.add('active');
+
+                document.querySelectorAll('.sidebar li').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`.sidebar li[onclick="showSection('${id}')"]`).classList.add('active');
+            };
+
+            // Example function to fetch data for the dashboard
+            const fetchDashboardStats = async () => {
+                try {
+                    // Replace with your actual Firebase Cloud Function or API endpoint
+                    const response = await fetch('/api/admin/stats');
+                    const data = await response.json();
+
+                    document.getElementById('total-users').textContent = data.totalUsers;
+                    document.getElementById('total-questions').textContent = data.totalQuestions;
+                    document.getElementById('new-answers').textContent = data.newAnswersToday;
+                } catch (error) {
+                    console.error('Error fetching dashboard stats:', error);
+                }
+            };
+
+            // Example function to populate the user table
+            const fetchAndPopulateUsers = async () => {
+                const userTableBody = document.querySelector('#user-table tbody');
+                userTableBody.innerHTML = ''; // Clear previous data
+                try {
+                    const response = await fetch('/api/admin/users');
+                    const users = await response.json();
+
+                    users.forEach(user => {
+                        const row = `
+                            <tr>
+                                <td>${user.id}</td>
+                                <td>${user.name}</td>
+                                <td>${user.email}</td>
+                                <td>${user.role}</td>
+                                <td>
+                                    <button class="edit" onclick="editUser('${user.id}')">Edit</button>
+                                    <button class="ban" onclick="banUser('${user.id}')">Ban</button>
+                                </td>
+                            </tr>
+                        `;
+                        userTableBody.innerHTML += row;
+                    });
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                }
+            };
+
+            // Initial data load when the page loads
+            fetchDashboardStats();
+            fetchAndPopulateUsers();
+            // You would add similar functions for Q&A and Ranks
+        });
+
+        // Stubs for user action functions
+        const editUser = (userId) => {
+            alert(`Editing user: ${userId}`);
+            // Implement API call to edit user
+        };
+
+        const banUser = (userId) => {
+            if (confirm(`Are you sure you want to ban user: ${userId}?`)) {
+                // Implement API call to ban user
+                alert(`User ${userId} has been banned.`);
+            }
+        };
+    </script>
 </body>
 </html>
