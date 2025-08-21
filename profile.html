@@ -17,6 +17,7 @@
             --card-background: #fff;
             --text-color: #333;
             --light-text: #7f8c8d;
+            --icon-color: var(--accent-color);
         }
 
         body {
@@ -24,9 +25,30 @@
             background-color: var(--background-color);
             color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding-bottom: 60px; /* Space for the fixed bottom nav */
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: var(--card-background);
+            width: 100%;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: flex-start; /* Adjusted for single row */
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
         }
 
         .profile-container {
@@ -39,8 +61,11 @@
             display: flex;
             flex-direction: column;
             gap: 30px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
         }
-        
+
         .profile-header {
             display: flex;
             flex-direction: column;
@@ -54,14 +79,22 @@
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            background-color: var(--accent-color);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3rem;
-            font-weight: 700;
+            overflow: hidden;
             margin-bottom: 15px;
+            background-color: #ddd; /* Placeholder if image fails */
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-username-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
         }
 
         .profile-username {
@@ -71,10 +104,16 @@
             color: var(--primary-color);
         }
 
+        .admin-badge {
+            color: var(--accent-color);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
         .profile-role {
             font-size: 1rem;
             color: var(--light-text);
-            margin: 5px 0 0;
+            margin: 0;
         }
 
         .profile-bio {
@@ -82,6 +121,8 @@
             color: var(--text-color);
             max-width: 600px;
             margin: 15px 0 0;
+            text-align: left;
+            white-space: pre-line; /* Preserve line breaks */
         }
 
         .stats-grid {
@@ -154,28 +195,64 @@
             cursor: pointer;
             transition: background-color 0.3s;
             align-self: flex-start;
+            margin-top: 20px;
         }
         .logout-button:hover {
             background-color: #34495e;
         }
 
-        @media (max-width: 600px) {
-            .profile-container {
-                padding: 20px;
-            }
-            .profile-header {
-                flex-direction: column;
-                align-items: center;
-            }
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--card-background);
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--light-text);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--icon-color);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
+    <header class="header">
+        <h1>My Profile</h1>
+    </header>
 
     <div class="profile-container">
         <div class="profile-header">
-            <div class="profile-avatar" id="profile-avatar">U</div>
-            <h1 class="profile-username" id="profile-username">Loading...</h1>
+            <div class="profile-avatar">
+                <img id="profile-image" src="" alt="Profile Avatar">
+            </div>
+            <div class="profile-username-container">
+                <h1 class="profile-username" id="profile-username">Loading...</h1>
+                <a id="admin-link" href="admin.html" class="admin-badge" style="display: none;">
+                    <span class="material-symbols-outlined" title="Admin Panel">verified_user</span>
+                </a>
+            </div>
             <p class="profile-role" id="profile-role"></p>
             <p class="profile-bio" id="profile-bio"></p>
             <button class="logout-button" id="logout-btn">Log Out</button>
@@ -216,6 +293,21 @@
         </div>
     </div>
 
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <span class="material-symbols-outlined nav-icon">home</span>
+            <span class="nav-label">Home</span>
+        </a>
+        <a href="leaderboard.html" class="nav-item">
+            <span class="material-symbols-outlined nav-icon">leaderboard</span>
+            <span class="nav-label">Leaderboard</span>
+        </a>
+        <a href="profile.html" class="nav-item active">
+            <span class="material-symbols-outlined nav-icon">person</span>
+            <span class="nav-label">Profile</span>
+        </a>
+    </nav>
+
     <script>
         // Your Firebase configuration
         const firebaseConfig = {
@@ -226,11 +318,23 @@
           messagingSenderId: "707268852195",
           appId: "1:707268852195:web:05e13ee17b0d96253688d6"
         };
-        
+
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+
+        const profileImages = [
+            'assets/profile1.png', 'assets/profile2.png', 'assets/profile3.png',
+            'assets/profile4.png', 'assets/profile5.png', 'assets/profile6.png',
+            'assets/profile7.png', 'assets/profile8.png', 'assets/profile9.png',
+            'assets/profile10.png'
+        ];
+
+        const getRandomProfileImage = () => {
+            const randomIndex = Math.floor(Math.random() * profileImages.length);
+            return profileImages.at(randomIndex);
+        };
 
         // Check user authentication status
         auth.onAuthStateChanged(async (user) => {
@@ -250,16 +354,26 @@
                 const userDoc = await db.collection('users').doc(userId).get();
                 if (userDoc.exists) {
                     const userData = userDoc.data();
-                    
+
+                    // Set profile image
+                    document.getElementById('profile-image').src = getRandomProfileImage();
+
                     // Display profile info
-                    document.getElementById('profile-avatar').textContent = userData.username.charAt(0).toUpperCase();
                     document.getElementById('profile-username').textContent = userData.username;
-                    document.getElementById('profile-role').textContent = userData.role;
-                    document.getElementById('profile-bio').textContent = userData.bio || 'No bio provided.'; // Use a default value
-                    
+                    document.getElementById('profile-role').textContent = formatRole(userData.role);
+                    document.getElementById('profile-bio').textContent = userData.bio || 'No bio provided.';
+
+                    // Show admin badge if user is admin or super_admin
+                    const adminLink = document.getElementById('admin-link');
+                    if (userData.role === 'admin' || userData.role === 'super_admin') {
+                        adminLink.style.display = 'inline-flex';
+                    } else {
+                        adminLink.style.display = 'none';
+                    }
+
                     // Display stats
                     document.getElementById('stat-points').textContent = userData.points || 0;
-                    document.getElementById('stat-rank').textContent = userData.rank || 'Student'; // Placeholder for a more complex rank system
+                    document.getElementById('stat-rank').textContent = userData.rank || 'Student'; // Placeholder
 
                     // Fetch and count user's questions
                     const questionsSnapshot = await db.collection('questions').where('authorId', '==', userId).get();
@@ -281,9 +395,24 @@
             }
         };
 
+        const formatRole = (role) => {
+            switch (role) {
+                case 'super_admin':
+                    return 'Super Admin';
+                case 'admin':
+                    return 'Admin';
+                case 'student':
+                    return 'Student';
+                case 'teacher':
+                    return 'Teacher';
+                default:
+                    return role.charAt(0).toUpperCase() + role.slice(1);
+            }
+        };
+
         const populateContributions = (listId, snapshot) => {
             const listElement = document.getElementById(listId);
-            listElement.innerHTML = ''; // Clear loading message
+            listElement.innerHTML = '';
 
             if (snapshot.empty) {
                 listElement.innerHTML = `<li><p class="contribution-meta">No contributions yet.</p></li>`;
@@ -294,7 +423,7 @@
                 const data = doc.data();
                 const listItem = document.createElement('li');
                 listItem.className = 'contribution-item';
-                
+
                 let title = '';
                 if (listId === 'questions-list') {
                     title = data.title;
