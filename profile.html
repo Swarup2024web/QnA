@@ -42,7 +42,7 @@
             padding: 15px 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
-            justify-content: flex-start;
+            justify-content: center; /* Center the content horizontally */
             align-items: center;
             gap: 20px;
         }
@@ -94,6 +94,7 @@
 
         .profile-username-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
             gap: 10px;
             margin-bottom: 5px;
@@ -111,13 +112,28 @@
             color: var(--light-text);
             margin: 0;
         }
+        
+        /* New nested rank display styles */
+        .rank-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        .rank-section .rank-label {
+            font-weight: 500;
+            color: var(--light-text);
+        }
 
         .profile-bio {
             font-size: 0.9rem;
             color: var(--text-color);
             max-width: 600px;
             margin: 15px 0 0;
-            text-align: left;
+            text-align: center; /* Centering the bio text */
             white-space: pre-line;
         }
 
@@ -474,7 +490,6 @@
             height: 12px;
         }
         
-        /* The key change: only show one or the other */
         #loading-container, #main-content {
             width: 100%;
             max-width: 800px;
@@ -555,11 +570,19 @@
             </div>
             <div class="profile-username-container">
                 <h1 class="profile-username" id="profile-username"></h1>
+                <div class="rank-section">
+                    <span class="rank-label">Rank:</span>
+                    <span id="stat-rank">N/A</span>
+                </div>
             </div>
             <p class="profile-role" id="profile-role"></p>
             <p class="profile-bio" id="profile-bio"></p>
         </div>
         <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value" id="stat-points">0</div>
+                <div class="label">Points</div>
+            </div>
             <div class="stat-card">
                 <div class="value" id="stat-questions">0</div>
                 <div class="label">Questions Asked</div>
@@ -567,14 +590,6 @@
             <div class="stat-card">
                 <div class="value" id="stat-answers">0</div>
                 <div class="label">Answers Given</div>
-            </div>
-            <div class="stat-card">
-                <div class="value" id="stat-points">0</div>
-                <div class="label">Points</div>
-            </div>
-            <div class="stat-card">
-                <div class="value" id="stat-rank">N/A</div>
-                <div class="label">Rank</div>
             </div>
         </div>
         
@@ -641,12 +656,18 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Array of profile images
+        // Array of profile images fetched from a hypothetical GitHub repo
         const profileImages = [
-            'assets/profile1.png', 'assets/profile2.png', 'assets/profile3.png',
-            'assets/profile4.png', 'assets/profile5.png', 'assets/profile6.png',
-            'assets/profile7.png', 'assets/profile8.png', 'assets/profile9.png',
-            'assets/profile10.png'
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile1.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile2.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile3.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile4.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile5.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile6.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile7.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile8.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile9.png',
+            'https://raw.githubusercontent.com/YourUsername/YourRepo/main/profile10.png'
         ];
 
         const getRandomProfileImage = () => {
@@ -678,7 +699,7 @@
                 currentUserId = user.uid;
                 try {
                     await fetchProfileData(currentUserId);
-                    showContent(); // Only call this after all data is fetched
+                    showContent();
                 } catch (error) {
                     console.error('Error during profile loading:', error);
                     alert('An error occurred while loading your profile. Please try again.');
