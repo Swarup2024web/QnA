@@ -324,6 +324,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // This array should correspond to the images you have in your assets folder.
         const profileImages = [
             'assets/profile1.png', 'assets/profile2.png', 'assets/profile3.png',
             'assets/profile4.png', 'assets/profile5.png', 'assets/profile6.png',
@@ -373,7 +374,7 @@
 
                     // Display stats
                     document.getElementById('stat-points').textContent = userData.points || 0;
-                    document.getElementById('stat-rank').textContent = userData.rank || 'Student'; // Placeholder
+                    document.getElementById('stat-rank').textContent = userData.rank || 'Student';
 
                     // Fetch and count user's questions
                     const questionsSnapshot = await db.collection('questions').where('authorId', '==', userId).get();
@@ -398,11 +399,11 @@
         const formatRole = (role) => {
             switch (role) {
                 case 'super_admin':
-                    return 'Super Admin';
+                    return 'Super Administrator';
                 case 'admin':
-                    return 'Admin';
-                case 'student':
-                    return 'Student';
+                    return 'Administrator';
+                case 'user':
+                    return 'Contributor';
                 case 'teacher':
                     return 'Teacher';
                 default:
