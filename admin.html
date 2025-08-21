@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary-color: #34495e;
@@ -156,166 +160,263 @@
         }
         button.edit { background-color: var(--accent-color); color: white; }
         button.ban { background-color: #e74c3c; color: white; }
+
+        /* Loader and message screen styles */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            z-index: 1001;
+            text-align: center;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: var(--text-color);
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>Admin Panel</h2>
-        <ul>
-            <li class="active" onclick="showSection('dashboard')">
-                <span class="material-symbols-outlined">dashboard</span>
-                Dashboard
-            </li>
-            <li onclick="showSection('qna')">
-                <span class="material-symbols-outlined">forum</span>
-                Manage Q&A
-            </li>
-            <li onclick="showSection('users')">
-                <span class="material-symbols-outlined">group</span>
-                Manage Users
-            </li>
-            <li onclick="showSection('ranks')">
-                <span class="material-symbols-outlined">military_tech</span>
-                Manage Ranks
-            </li>
-        </ul>
+    <div id="loading-screen" class="loading-screen">
+        <div class="spinner"></div>
+        <div class="loading-text">Checking user credentials...</div>
     </div>
-    <div class="main-content">
-        <header>
-            <h1>Welcome, Admin</h1>
-            <span class="material-symbols-outlined menu-toggle" onclick="toggleMenu()">menu</span>
-        </header>
 
-        <section id="dashboard" class="content-section active">
-            <h2>Dashboard</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Total Users</h3>
-                    <p id="total-users">0</p>
+    <div id="admin-content" style="display: none;">
+        <div class="sidebar">
+            <h2>Admin Panel</h2>
+            <ul>
+                <li class="active" onclick="showSection('dashboard')">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </li>
+                <li onclick="showSection('qna')">
+                    <span class="material-symbols-outlined">forum</span>
+                    Manage Q&A
+                </li>
+                <li onclick="showSection('users')">
+                    <span class="material-symbols-outlined">group</span>
+                    Manage Users
+                </li>
+                <li onclick="showSection('ranks')">
+                    <span class="material-symbols-outlined">military_tech</span>
+                    Manage Ranks
+                </li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <header>
+                <h1>Welcome, Admin</h1>
+                <span class="material-symbols-outlined menu-toggle" onclick="toggleMenu()">menu</span>
+            </header>
+            <section id="dashboard" class="content-section active">
+                <h2>Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p id="total-users">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Questions</h3>
+                        <p id="total-questions">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>New Answers Today</h3>
+                        <p id="new-answers">0</p>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <h3>Total Questions</h3>
-                    <p id="total-questions">0</p>
+            </section>
+            <section id="qna" class="content-section">
+                <h2>Manage Questions & Answers</h2>
+                <div id="qna-list">
                 </div>
-                <div class="stat-card">
-                    <h3>New Answers Today</h3>
-                    <p id="new-answers">0</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="qna" class="content-section">
-            <h2>Manage Questions & Answers</h2>
-            <div id="qna-list">
-                </div>
-        </section>
-
-        <section id="users" class="content-section">
-            <h2>Manage Users</h2>
-            <table id="user-table">
-                <thead>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
+            </section>
+            <section id="users" class="content-section">
+                <h2>Manage Users</h2>
+                <table id="user-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                     </tbody>
-            </table>
-        </section>
-
-        <section id="ranks" class="content-section">
-            <h2>Manage Ranks</h2>
-            <div id="rank-rules">
+                </table>
+            </section>
+            <section id="ranks" class="content-section">
+                <h2>Manage Ranks</h2>
+                <div id="rank-rules">
                 </div>
-        </section>
+            </section>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Function to toggle the mobile menu
-            window.toggleMenu = () => {
-                const sidebar = document.querySelector('.sidebar');
-                sidebar.classList.toggle('active');
-            };
+        // Your Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
+          authDomain: "qnasite-6d9cc.firebaseapp.com",
+          projectId: "qnasite-6d9cc",
+          storageBucket: "qnasite-6d9cc.firebasestorage.app",
+          messagingSenderId: "707268852195",
+          appId: "1:707268852195:web:05e13ee17b0d96253688d6"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-            // Function to switch between sections
-            window.showSection = (id) => {
-                document.querySelectorAll('.content-section').forEach(section => {
-                    section.classList.remove('active');
-                });
-                document.getElementById(id).classList.add('active');
-
-                document.querySelectorAll('.sidebar li').forEach(item => {
-                    item.classList.remove('active');
-                });
-                document.querySelector(`.sidebar li[onclick="showSection('${id}')"]`).classList.add('active');
-
-                // Close menu on mobile after selection
-                const isMobile = window.innerWidth < 768;
-                if (isMobile) {
-                    toggleMenu();
+        // Check user authentication and role on page load
+        auth.onAuthStateChanged(async (user) => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const adminContent = document.getElementById('admin-content');
+            
+            if (user) {
+                // User is signed in. Check their role.
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userRole = userDoc.data().role;
+                    if (userRole === 'admin' || userRole === 'super_admin') {
+                        // User has the correct role. Hide loading screen and show content.
+                        loadingScreen.style.display = 'none';
+                        adminContent.style.display = 'flex';
+                        // Now we can call the data loading functions
+                        fetchDashboardStats();
+                        fetchAndPopulateUsers();
+                    } else {
+                        // User is logged in but does not have admin role.
+                        alert('Access Denied. You do not have permission to view this page.');
+                        window.location.href = 'index.html'; // Redirect to home page
+                    }
+                } else {
+                    // User document does not exist, likely a new user.
+                    alert('Access Denied. User data not found.');
+                    window.location.href = 'index.html';
                 }
-            };
+            } else {
+                // No user is signed in. Redirect to login page.
+                alert('Please log in to access this page.');
+                window.location.href = 'auth.html';
+            }
+        });
+        
+        // ** The following functions are from the previous version and have been integrated **
+        
+        window.toggleMenu = () => {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        };
 
-            // Example function to fetch dashboard stats
-            const fetchDashboardStats = async () => {
-                try {
-                    // Replace with your actual Firebase Cloud Function or API endpoint
-                    const response = await fetch('/api/admin/stats');
-                    const data = await response.json();
+        window.showSection = (id) => {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(id).classList.add('active');
+
+            document.querySelectorAll('.sidebar li').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.sidebar li[onclick="showSection('${id}')"]`).classList.add('active');
+
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                toggleMenu();
+            }
+        };
+
+        const fetchDashboardStats = async () => {
+            try {
+                // This would be a Cloud Function that aggregates data for the dashboard
+                const statsRef = db.collection('stats').doc('site_summary');
+                const doc = await statsRef.get();
+                if (doc.exists) {
+                    const data = doc.data();
                     document.getElementById('total-users').textContent = data.totalUsers;
                     document.getElementById('total-questions').textContent = data.totalQuestions;
                     document.getElementById('new-answers').textContent = data.newAnswersToday;
-                } catch (error) {
-                    console.error('Error fetching dashboard stats:', error);
                 }
-            };
-
-            // Example function to populate user table
-            const fetchAndPopulateUsers = async () => {
-                const userTableBody = document.querySelector('#user-table tbody');
-                userTableBody.innerHTML = '';
-                try {
-                    const response = await fetch('/api/admin/users');
-                    const users = await response.json();
-                    users.forEach(user => {
-                        const row = `
-                            <tr>
-                                <td>${user.id}</td>
-                                <td>${user.name}</td>
-                                <td>${user.email}</td>
-                                <td>${user.role}</td>
-                                <td>
-                                    <button class="edit" onclick="editUser('${user.id}')">Edit</button>
-                                    <button class="ban" onclick="banUser('${user.id}')">Ban</button>
-                                </td>
-                            </tr>
-                        `;
-                        userTableBody.innerHTML += row;
-                    });
-                } catch (error) {
-                    console.error('Error fetching users:', error);
-                }
-            };
-
-            // Initial data load
-            fetchDashboardStats();
-            fetchAndPopulateUsers();
-        });
-
-        const editUser = (userId) => {
-            alert(`Editing user: ${userId}`);
-            // Call API
+            } catch (error) {
+                console.error('Error fetching dashboard stats:', error);
+            }
         };
 
-        const banUser = (userId) => {
+        const fetchAndPopulateUsers = async () => {
+            const userTableBody = document.querySelector('#user-table tbody');
+            userTableBody.innerHTML = '';
+            try {
+                const usersSnapshot = await db.collection('users').get();
+                usersSnapshot.forEach(doc => {
+                    const user = doc.data();
+                    const row = `
+                        <tr>
+                            <td>${doc.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.role}</td>
+                            <td>
+                                <button class="edit" onclick="editUser('${doc.id}', '${user.role}')">Edit</button>
+                                <button class="ban" onclick="banUser('${doc.id}')">Ban</button>
+                            </td>
+                        </tr>
+                    `;
+                    userTableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        };
+
+        const editUser = async (userId, currentRole) => {
+            const newRole = prompt(`Current role for ${userId} is "${currentRole}". Enter new role (e.g., student, tutor, admin):`);
+            if (newRole && ['student', 'tutor', 'admin', 'super_admin'].includes(newRole.toLowerCase())) {
+                try {
+                    await db.collection('users').doc(userId).update({ role: newRole.toLowerCase() });
+                    alert(`User ${userId} role updated to ${newRole.toLowerCase()}.`);
+                    fetchAndPopulateUsers(); // Refresh the table
+                } catch (error) {
+                    alert('Failed to update user role.');
+                    console.error('Error updating role:', error);
+                }
+            } else if (newRole !== null) {
+                alert('Invalid role entered. Please try again.');
+            }
+        };
+
+        const banUser = async (userId) => {
             if (confirm(`Are you sure you want to ban user: ${userId}?`)) {
-                // Call API
-                alert(`User ${userId} has been banned.`);
+                try {
+                    // In a real app, you would disable the user in Firebase Auth and maybe a 'isBanned' field in Firestore
+                    await db.collection('users').doc(userId).update({ isBanned: true });
+                    alert(`User ${userId} has been banned.`);
+                    fetchAndPopulateUsers(); // Refresh the table
+                } catch (error) {
+                    alert('Failed to ban user.');
+                    console.error('Error banning user:', error);
+                }
             }
         };
     </script>
