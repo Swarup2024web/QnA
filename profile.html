@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Q&A Site</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #2980b9;
+            --background-color: #f4f7f9;
+            --card-background: #fff;
+            --text-color: #333;
+            --light-text: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .profile-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-bottom: 1px solid var(--background-color);
+            padding-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .profile-username {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .profile-role {
+            font-size: 1rem;
+            color: var(--light-text);
+            margin: 5px 0 0;
+        }
+
+        .profile-bio {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            max-width: 600px;
+            margin: 15px 0 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat-card {
+            padding: 20px;
+            background-color: var(--background-color);
+            border-radius: 8px;
+        }
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+
+        .user-contributions {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .contribution-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .contribution-item {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .contribution-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .contribution-title {
+            font-weight: 500;
+            color: var(--primary-color);
+            margin: 0 0 5px;
+        }
+
+        .contribution-meta {
+            font-size: 0.8rem;
+            color: var(--light-text);
+        }
+
+        .logout-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            align-self: flex-start;
+        }
+        .logout-button:hover {
+            background-color: #34495e;
+        }
+
+        @media (max-width: 600px) {
+            .profile-container {
+                padding: 20px;
+            }
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar" id="profile-avatar">U</div>
+            <h1 class="profile-username" id="profile-username">Loading...</h1>
+            <p class="profile-role" id="profile-role"></p>
+            <p class="profile-bio" id="profile-bio"></p>
+            <button class="logout-button" id="logout-btn">Log Out</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value" id="stat-questions">0</div>
+                <div class="label">Questions Asked</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-answers">0</div>
+                <div class="label">Answers Given</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-points">0</div>
+                <div class="label">Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="value" id="stat-rank">N/A</div>
+                <div class="label">Rank</div>
+            </div>
+        </div>
+
+        <div class="user-contributions">
+            <div id="my-questions">
+                <h3>My Questions</h3>
+                <ul class="contribution-list" id="questions-list">
+                    <li><p class="contribution-meta">Loading questions...</p></li>
+                </ul>
+            </div>
+            <div id="my-answers">
+                <h3>My Answers</h3>
+                <ul class="contribution-list" id="answers-list">
+                    <li><p class="contribution-meta">Loading answers...</p></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
+          authDomain: "qnasite-6d9cc.firebaseapp.com",
+          projectId: "qnasite-6d9cc",
+          storageBucket: "qnasite-6d9cc.firebasestorage.app",
+          messagingSenderId: "707268852195",
+          appId: "1:707268852195:web:05e13ee17b0d96253688d6"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Check user authentication status
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // User is signed in. Fetch and display profile data.
+                fetchProfileData(user.uid);
+            } else {
+                // No user is signed in. Redirect to login page.
+                alert('Please log in to view your profile.');
+                window.location.href = 'auth.html';
+            }
+        });
+
+        const fetchProfileData = async (userId) => {
+            try {
+                // Fetch user data from Firestore
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    
+                    // Display profile info
+                    document.getElementById('profile-avatar').textContent = userData.username.charAt(0).toUpperCase();
+                    document.getElementById('profile-username').textContent = userData.username;
+                    document.getElementById('profile-role').textContent = userData.role;
+                    document.getElementById('profile-bio').textContent = userData.bio || 'No bio provided.'; // Use a default value
+                    
+                    // Display stats
+                    document.getElementById('stat-points').textContent = userData.points || 0;
+                    document.getElementById('stat-rank').textContent = userData.rank || 'Student'; // Placeholder for a more complex rank system
+
+                    // Fetch and count user's questions
+                    const questionsSnapshot = await db.collection('questions').where('authorId', '==', userId).get();
+                    document.getElementById('stat-questions').textContent = questionsSnapshot.size;
+                    populateContributions('questions-list', questionsSnapshot);
+
+                    // Fetch and count user's answers
+                    const answersSnapshot = await db.collection('answers').where('authorId', '==', userId).get();
+                    document.getElementById('stat-answers').textContent = answersSnapshot.size;
+                    populateContributions('answers-list', answersSnapshot);
+                } else {
+                    console.error('User document not found.');
+                    alert('User data not found. Please log in again.');
+                    auth.signOut();
+                }
+            } catch (error) {
+                console.error('Error fetching profile data:', error);
+                alert('An error occurred while loading your profile.');
+            }
+        };
+
+        const populateContributions = (listId, snapshot) => {
+            const listElement = document.getElementById(listId);
+            listElement.innerHTML = ''; // Clear loading message
+
+            if (snapshot.empty) {
+                listElement.innerHTML = `<li><p class="contribution-meta">No contributions yet.</p></li>`;
+                return;
+            }
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const listItem = document.createElement('li');
+                listItem.className = 'contribution-item';
+                
+                let title = '';
+                if (listId === 'questions-list') {
+                    title = data.title;
+                } else {
+                    title = `Answer to: ${data.questionTitle || 'N/A'}`;
+                }
+
+                listItem.innerHTML = `
+                    <p class="contribution-title">${title}</p>
+                    <p class="contribution-meta">
+                        ${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : ''}
+                    </p>
+                `;
+                listElement.appendChild(listItem);
+            });
+        };
+
+        // Handle Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                alert('Logged out successfully!');
+                window.location.href = 'auth.html';
+            }).catch((error) => {
+                console.error('Logout error:', error);
+                alert('An error occurred during logout.');
+            });
+        });
+    </script>
+</body>
+</html>
