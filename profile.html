@@ -31,6 +31,8 @@
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         /* Header Styles */
@@ -40,7 +42,7 @@
             padding: 15px 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
-            justify-content: flex-start; /* Adjusted for single row */
+            justify-content: flex-start;
             align-items: center;
             gap: 20px;
         }
@@ -164,7 +166,7 @@
 
         .contribution-item {
             background-color: var(--card-background);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--background-color);
             padding: 15px;
             border-radius: 8px;
             transition: transform 0.2s;
@@ -235,64 +237,240 @@
         .nav-label {
             font-size: 0.8rem;
         }
+
+        /* --- Skeleton Loading Styles --- */
+        .skeleton {
+            background: #f0f0f0;
+            background-image: linear-gradient(to right, #f0f0f0 0%, #e0e0e0 20%, #f0f0f0 40%, #f0f0f0 100%);
+            background-repeat: no-repeat;
+            background-size: 800px 100%;
+            display: inline-block;
+            position: relative;
+            animation-duration: 1.2s;
+            animation-fill-mode: forwards;
+            animation-iteration-count: infinite;
+            animation-name: placeholderShimmer;
+            animation-timing-function: linear;
+            border-radius: 4px;
+        }
+
+        @keyframes placeholderShimmer {
+            0% { background-position: -468px 0; }
+            100% { background-position: 468px 0; }
+        }
+
+        .loading .content {
+            display: none;
+        }
+
+        .loading .skeleton-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .skeleton-profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .skeleton-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .skeleton-line {
+            height: 16px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-username {
+            width: 200px;
+            height: 32px;
+            margin-bottom: 10px;
+        }
+
+        .skeleton-role {
+            width: 150px;
+            height: 18px;
+        }
+
+        .skeleton-bio {
+            width: 100%;
+            height: 12px;
+            margin-top: 20px;
+        }
+
+        .skeleton-logout-btn {
+            width: 100px;
+            height: 40px;
+            border-radius: 8px;
+            align-self: center;
+            margin-top: 20px;
+        }
+
+        .skeleton-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .skeleton-stat-card {
+            padding: 20px;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .skeleton-stat-value {
+            width: 50px;
+            height: 24px;
+        }
+
+        .skeleton-stat-label {
+            width: 100px;
+            height: 12px;
+        }
+
+        .skeleton-list-item {
+            padding: 15px;
+            background-color: var(--card-background);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .skeleton-list-title {
+            width: 80%;
+            height: 20px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-list-meta {
+            width: 40%;
+            height: 12px;
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
-<body>
-    <header class="header">
-        <h1>My Profile</h1>
-    </header>
-
-    <div class="profile-container">
-        <div class="profile-header">
-            <div class="profile-avatar">
-                <img id="profile-image" src="" alt="Profile Avatar">
-            </div>
-            <div class="profile-username-container">
-                <h1 class="profile-username" id="profile-username">Loading...</h1>
-                <a id="admin-link" href="admin.html" class="admin-badge" style="display: none;">
-                    <span class="material-symbols-outlined" title="Admin Panel">verified_user</span>
-                </a>
-            </div>
-            <p class="profile-role" id="profile-role"></p>
-            <p class="profile-bio" id="profile-bio"></p>
-            <button class="logout-button" id="logout-btn">Log Out</button>
+<body class="loading">
+    <div class="skeleton-container profile-container">
+        <div class="skeleton-profile-header">
+            <div class="skeleton skeleton-avatar"></div>
+            <div class="skeleton skeleton-username"></div>
+            <div class="skeleton skeleton-role"></div>
+            <div class="skeleton skeleton-bio" style="width: 80%;"></div>
+            <div class="skeleton skeleton-bio" style="width: 70%;"></div>
+            <div class="skeleton skeleton-logout-btn"></div>
         </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="value" id="stat-questions">0</div>
-                <div class="label">Questions Asked</div>
+        <div class="skeleton-stats-grid">
+            <div class="skeleton-stat-card">
+                <div class="skeleton skeleton-stat-value"></div>
+                <div class="skeleton skeleton-stat-label"></div>
             </div>
-            <div class="stat-card">
-                <div class="value" id="stat-answers">0</div>
-                <div class="label">Answers Given</div>
+            <div class="skeleton-stat-card">
+                <div class="skeleton skeleton-stat-value"></div>
+                <div class="skeleton skeleton-stat-label"></div>
             </div>
-            <div class="stat-card">
-                <div class="value" id="stat-points">0</div>
-                <div class="label">Points</div>
+            <div class="skeleton-stat-card">
+                <div class="skeleton skeleton-stat-value"></div>
+                <div class="skeleton skeleton-stat-label"></div>
             </div>
-            <div class="stat-card">
-                <div class="value" id="stat-rank">N/A</div>
-                <div class="label">Rank</div>
+            <div class="skeleton-stat-card">
+                <div class="skeleton skeleton-stat-value"></div>
+                <div class="skeleton skeleton-stat-label"></div>
             </div>
         </div>
-
         <div class="user-contributions">
-            <div id="my-questions">
-                <h3>My Questions</h3>
-                <ul class="contribution-list" id="questions-list">
-                    <li><p class="contribution-meta">Loading questions...</p></li>
-                </ul>
+            <h3><div class="skeleton skeleton-line" style="width: 120px;"></div></h3>
+            <ul class="contribution-list">
+                <li class="skeleton-list-item">
+                    <div class="skeleton skeleton-list-title"></div>
+                    <div class="skeleton skeleton-list-meta"></div>
+                </li>
+                <li class="skeleton-list-item">
+                    <div class="skeleton skeleton-list-title"></div>
+                    <div class="skeleton skeleton-list-meta"></div>
+                </li>
+            </ul>
+        </div>
+        <div class="user-contributions">
+            <h3><div class="skeleton skeleton-line" style="width: 120px;"></div></h3>
+            <ul class="contribution-list">
+                <li class="skeleton-list-item">
+                    <div class="skeleton skeleton-list-title"></div>
+                    <div class="skeleton skeleton-list-meta"></div>
+                </li>
+                <li class="skeleton-list-item">
+                    <div class="skeleton skeleton-list-title"></div>
+                    <div class="skeleton skeleton-list-meta"></div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="content hidden">
+        <header class="header">
+            <h1>My Profile</h1>
+        </header>
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <img id="profile-image" src="" alt="Profile Avatar">
+                </div>
+                <div class="profile-username-container">
+                    <h1 class="profile-username" id="profile-username"></h1>
+                    <a id="admin-link" href="admin.html" class="admin-badge" style="display: none;">
+                        <span class="material-symbols-outlined" title="Admin Panel">verified_user</span>
+                    </a>
+                </div>
+                <p class="profile-role" id="profile-role"></p>
+                <p class="profile-bio" id="profile-bio"></p>
+                <button class="logout-button" id="logout-btn">Log Out</button>
             </div>
-            <div id="my-answers">
-                <h3>My Answers</h3>
-                <ul class="contribution-list" id="answers-list">
-                    <li><p class="contribution-meta">Loading answers...</p></li>
-                </ul>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="value" id="stat-questions">0</div>
+                    <div class="label">Questions Asked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-answers">0</div>
+                    <div class="label">Answers Given</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-points">0</div>
+                    <div class="label">Points</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-rank">N/A</div>
+                    <div class="label">Rank</div>
+                </div>
+            </div>
+            <div class="user-contributions">
+                <div id="my-questions">
+                    <h3>My Questions</h3>
+                    <ul class="contribution-list" id="questions-list"></ul>
+                </div>
+                <div id="my-answers">
+                    <h3>My Answers</h3>
+                    <ul class="contribution-list" id="answers-list"></ul>
+                </div>
             </div>
         </div>
     </div>
-
+    
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item">
             <span class="material-symbols-outlined nav-icon">home</span>
@@ -307,7 +485,6 @@
             <span class="nav-label">Profile</span>
         </a>
     </nav>
-
     <script>
         // Your Firebase configuration
         const firebaseConfig = {
@@ -337,11 +514,18 @@
             return profileImages.at(randomIndex);
         };
 
+        // Get the main body element and the content container
+        const body = document.body;
+        const content = document.querySelector('.content');
+
         // Check user authentication status
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 // User is signed in. Fetch and display profile data.
-                fetchProfileData(user.uid);
+                await fetchProfileData(user.uid);
+                // Hide skeleton and show content after data is loaded
+                body.classList.remove('loading');
+                content.classList.remove('hidden');
             } else {
                 // No user is signed in. Redirect to login page.
                 alert('Please log in to view your profile.');
@@ -393,6 +577,7 @@
             } catch (error) {
                 console.error('Error fetching profile data:', error);
                 alert('An error occurred while loading your profile.');
+                auth.signOut();
             }
         };
 
