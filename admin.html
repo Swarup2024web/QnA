@@ -160,6 +160,15 @@
         }
         button.edit { background-color: var(--accent-color); color: white; }
         button.ban { background-color: #e74c3c; color: white; }
+        .add-rank-btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+        .action-cell {
+            white-space: nowrap;
+        }
 
         /* Loader and message screen styles */
         .loading-screen {
@@ -268,8 +277,21 @@
             </section>
             <section id="ranks" class="content-section">
                 <h2>Manage Ranks</h2>
-                <div id="rank-rules">
-                </div>
+                <button class="add-rank-btn" onclick="addRank()">Add New Rank</button>
+                <table id="rank-table">
+                    <thead>
+                        <tr>
+                            <th>Rank Name</th>
+                            <th>Points</th>
+                            <th>Questions</th>
+                            <th>Answers</th>
+                            <th>Best Answers</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </section>
         </div>
     </div>
@@ -296,35 +318,34 @@
             const adminContent = document.getElementById('admin-content');
             
             if (user) {
-                // User is signed in. Check their role.
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists) {
-                    const userRole = userDoc.data().role;
-                    if (userRole === 'admin' || userRole === 'super_admin') {
-                        // User has the correct role. Hide loading screen and show content.
-                        loadingScreen.style.display = 'none';
-                        adminContent.style.display = 'flex';
-                        // Now we can call the data loading functions
-                        fetchDashboardStats();
-                        fetchAndPopulateUsers();
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                        const userRole = userDoc.data().role;
+                        if (userRole === 'admin' || userRole === 'super_admin') {
+                            loadingScreen.style.display = 'none';
+                            adminContent.style.display = 'flex';
+                            fetchDashboardStats();
+                            fetchAndPopulateUsers();
+                            fetchAndPopulateRanks();
+                        } else {
+                            alert('Access Denied. You do not have permission to view this page.');
+                            window.location.href = 'index.html';
+                        }
                     } else {
-                        // User is logged in but does not have admin role.
-                        alert('Access Denied. You do not have permission to view this page.');
-                        window.location.href = 'index.html'; // Redirect to home page
+                        alert('Access Denied. User data not found.');
+                        window.location.href = 'index.html';
                     }
-                } else {
-                    // User document does not exist, likely a new user.
-                    alert('Access Denied. User data not found.');
-                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error("Authentication check failed:", error);
+                    alert("An error occurred during authentication. Please try again.");
+                    auth.signOut();
                 }
             } else {
-                // No user is signed in. Redirect to login page.
                 alert('Please log in to access this page.');
                 window.location.href = 'auth.html';
             }
         });
-        
-        // ** The following functions are from the previous version and have been integrated **
         
         window.toggleMenu = () => {
             const sidebar = document.querySelector('.sidebar');
@@ -342,6 +363,15 @@
             });
             document.querySelector(`.sidebar li[onclick="showSection('${id}')"]`).classList.add('active');
 
+            // Call specific fetch functions when a section is shown
+            if (id === 'ranks') {
+                fetchAndPopulateRanks();
+            } else if (id === 'users') {
+                fetchAndPopulateUsers();
+            } else if (id === 'dashboard') {
+                fetchDashboardStats();
+            }
+
             const isMobile = window.innerWidth < 768;
             if (isMobile) {
                 toggleMenu();
@@ -350,7 +380,6 @@
 
         const fetchDashboardStats = async () => {
             try {
-                // This would be a Cloud Function that aggregates data for the dashboard
                 const statsRef = db.collection('stats').doc('site_summary');
                 const doc = await statsRef.get();
                 if (doc.exists) {
@@ -377,7 +406,7 @@
                             <td>${user.username}</td>
                             <td>${user.email}</td>
                             <td>${user.role}</td>
-                            <td>
+                            <td class="action-cell">
                                 <button class="edit" onclick="editUser('${doc.id}', '${user.role}')">Edit</button>
                                 <button class="ban" onclick="banUser('${doc.id}')">Ban</button>
                             </td>
@@ -409,13 +438,104 @@
         const banUser = async (userId) => {
             if (confirm(`Are you sure you want to ban user: ${userId}?`)) {
                 try {
-                    // In a real app, you would disable the user in Firebase Auth and maybe a 'isBanned' field in Firestore
                     await db.collection('users').doc(userId).update({ isBanned: true });
                     alert(`User ${userId} has been banned.`);
                     fetchAndPopulateUsers(); // Refresh the table
                 } catch (error) {
                     alert('Failed to ban user.');
                     console.error('Error banning user:', error);
+                }
+            }
+        };
+        
+        // ** New Functions for Rank Management **
+        
+        const fetchAndPopulateRanks = async () => {
+            const rankTableBody = document.querySelector('#rank-table tbody');
+            rankTableBody.innerHTML = '';
+            try {
+                const ranksSnapshot = await db.collection('ranks').orderBy('points').get();
+                ranksSnapshot.forEach(doc => {
+                    const rank = doc.data();
+                    const row = `
+                        <tr>
+                            <td>${rank.name}</td>
+                            <td>${rank.points || 0}</td>
+                            <td>${rank.questions || 0}</td>
+                            <td>${rank.answers || 0}</td>
+                            <td>${rank.bestAnswers || 0}</td>
+                            <td class="action-cell">
+                                <button class="edit" onclick="editRank('${doc.id}')">Edit</button>
+                                <button class="ban" onclick="deleteRank('${doc.id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                    rankTableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error fetching ranks:', error);
+            }
+        };
+
+        window.addRank = async () => {
+            const name = prompt("Enter the new rank name:");
+            if (!name) return;
+            const points = parseInt(prompt("Enter required points (number):"), 10) || 0;
+            const questions = parseInt(prompt("Enter required questions (number):"), 10) || 0;
+            const answers = parseInt(prompt("Enter required answers (number):"), 10) || 0;
+            const bestAnswers = parseInt(prompt("Enter required best answers (number):"), 10) || 0;
+
+            if (name) {
+                try {
+                    await db.collection('ranks').add({ name, points, questions, answers, bestAnswers });
+                    alert('Rank added successfully!');
+                    fetchAndPopulateRanks();
+                } catch (error) {
+                    alert('Failed to add rank.');
+                    console.error('Error adding rank:', error);
+                }
+            }
+        };
+
+        window.editRank = async (rankId) => {
+            try {
+                const doc = await db.collection('ranks').doc(rankId).get();
+                if (!doc.exists) {
+                    alert('Rank not found.');
+                    return;
+                }
+                const currentRank = doc.data();
+                const newName = prompt("Edit rank name:", currentRank.name);
+                if (!newName) return;
+                const newPoints = parseInt(prompt("Edit required points:", currentRank.points), 10);
+                const newQuestions = parseInt(prompt("Edit required questions:", currentRank.questions), 10);
+                const newAnswers = parseInt(prompt("Edit required answers:", currentRank.answers), 10);
+                const newBestAnswers = parseInt(prompt("Edit required best answers:", currentRank.bestAnswers), 10);
+                
+                await db.collection('ranks').doc(rankId).update({ 
+                    name: newName, 
+                    points: newPoints, 
+                    questions: newQuestions, 
+                    answers: newAnswers, 
+                    bestAnswers: newBestAnswers 
+                });
+                alert('Rank updated successfully!');
+                fetchAndPopulateRanks();
+            } catch (error) {
+                alert('Failed to edit rank.');
+                console.error('Error editing rank:', error);
+            }
+        };
+
+        window.deleteRank = async (rankId) => {
+            if (confirm('Are you sure you want to delete this rank?')) {
+                try {
+                    await db.collection('ranks').doc(rankId).delete();
+                    alert('Rank deleted successfully!');
+                    fetchAndPopulateRanks();
+                } catch (error) {
+                    alert('Failed to delete rank.');
+                    console.error('Error deleting rank:', error);
                 }
             }
         };
