@@ -692,7 +692,7 @@
          */
         const fetchRanks = async () => {
             try {
-                const ranksSnapshot = await db.collection('ranks').orderBy('points', 'asc').get();
+                const ranksSnapshot = await db.collection('ranks').get();
                 return ranksSnapshot.docs.map(doc => doc.data());
             } catch (error) {
                 console.error('Error fetching ranks:', error);
@@ -730,6 +730,7 @@
          */
         const fetchProfileData = async (userId) => {
             try {
+                // Fetch user data and ranks in parallel
                 const [userDoc, questionsSnapshot, answersSnapshot, ranks] = await Promise.all([
                     db.collection('users').doc(userId).get(),
                     db.collection('questions').where('authorId', '==', userId).get(),
@@ -744,7 +745,7 @@
                 
                 const userData = userDoc.data();
                 
-                // User stats from user document
+                // Get stats from the user document
                 const userPoints = userData.points || 0;
                 const userQuestions = userData.questions || 0;
                 const userAnswers = userData.answers || 0;
@@ -763,6 +764,7 @@
                 const userRanks = getMultipleUserRanks(userData, ranks);
                 displayRanks(userRanks);
 
+                // Populate contributions lists
                 populateContributions('questions-list', questionsSnapshot);
                 populateContributions('answers-list', answersSnapshot);
                 populateProfileOptions(userData.role);
@@ -776,15 +778,14 @@
         const getMultipleUserRanks = (userData, ranks) => {
             const userRanks = [];
             
-            // Map the user data fields to the rank criteria names
             const criteriaMap = {
                 points: userData.points || 0,
                 questions: userData.questions || 0,
                 answers: userData.answers || 0,
-                bestAnswers: userData.best_answers || 0
+                best_answers: userData.best_answers || 0
             };
 
-            const criteriaKeys = ['points', 'questions', 'answers', 'bestAnswers'];
+            const criteriaKeys = ['points', 'questions', 'answers', 'best_answers'];
 
             for (const key of criteriaKeys) {
                 const userValue = criteriaMap[key];
