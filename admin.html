@@ -94,6 +94,8 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: relative; /* For spinner positioning */
+            min-height: 300px;
         }
         .content-section.active {
             display: block;
@@ -173,27 +175,31 @@
             margin: 0;
         }
         
-        /* Skeleton Loading */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 4px;
-            color: transparent;
+        /* Spinner Styles */
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 10;
+            border-radius: 8px;
         }
-        .skeleton.text {
-            height: 1em;
-            min-width: 100px;
-            display: inline-block;
+        .spinner {
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid var(--primary-color); /* Blue */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
         }
-        .skeleton.p {
-            height: 2.5em;
-            min-width: 100px;
-            display: inline-block;
-        }
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Tables */
@@ -284,9 +290,8 @@
     </style>
 </head>
 <body>
-    <div id="loading-screen" class="loading-screen">
+    <div id="loading-screen" class="spinner-container">
         <div class="spinner"></div>
-        <div class="loading-text">Loading...</div>
     </div>
 
     <div id="admin-content" style="display: none;">
@@ -302,28 +307,34 @@
 
         <div class="main-content">
             <section id="dashboard" class="content-section active">
+                <div id="dashboard-spinner" class="spinner-container">
+                    <div class="spinner"></div>
+                </div>
                 <h2>Dashboard</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <h3>Total Users</h3>
-                        <p id="total-users" class="skeleton-p"></p>
+                        <p id="total-users"></p>
                     </div>
                     <div class="stat-card">
                         <h3>Total Questions</h3>
-                        <p id="total-questions" class="skeleton-p"></p>
+                        <p id="total-questions"></p>
                     </div>
                     <div class="stat-card">
                         <h3>Total Answers</h3>
-                        <p id="total-answers" class="skeleton-p"></p>
+                        <p id="total-answers"></p>
                     </div>
                     <div class="stat-card">
                         <h3>Best Answers</h3>
-                        <p id="total-best-answers" class="skeleton-p"></p>
+                        <p id="total-best-answers"></p>
                     </div>
                 </div>
             </section>
             
             <section id="qna" class="content-section">
+                <div id="qna-spinner" class="spinner-container">
+                    <div class="spinner"></div>
+                </div>
                 <h2>Manage Questions & Answers</h2>
                 <div class="table-container">
                     <table id="questions-table">
@@ -335,14 +346,15 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr><td colspan="4"><div class="skeleton text"></div></td></tr>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </section>
             
             <section id="users" class="content-section">
+                <div id="users-spinner" class="spinner-container">
+                    <div class="spinner"></div>
+                </div>
                 <h2>Manage Users</h2>
                 <div class="table-container">
                     <table id="user-table">
@@ -355,14 +367,15 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr><td colspan="5"><div class="skeleton text"></div></td></tr>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </section>
             
             <section id="ranks" class="content-section">
+                <div id="ranks-spinner" class="spinner-container">
+                    <div class="spinner"></div>
+                </div>
                 <h2>Manage Ranks</h2>
                 
                 <div id="rank-form-container">
@@ -396,9 +409,7 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                             <tr><td colspan="4"><div class="skeleton text"></div></td></tr>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </section>
@@ -524,6 +535,20 @@
             }
         };
 
+        const showSpinner = (sectionId) => {
+            const spinner = document.getElementById(sectionId + '-spinner');
+            if (spinner) {
+                spinner.style.display = 'flex';
+            }
+        };
+
+        const hideSpinner = (sectionId) => {
+            const spinner = document.getElementById(sectionId + '-spinner');
+            if (spinner) {
+                spinner.style.display = 'none';
+            }
+        };
+
         const handleLogout = () => {
             auth.signOut().then(() => {
                 window.location.href = 'auth.html';
@@ -534,52 +559,36 @@
         };
 
         const fetchDashboardStats = async () => {
-            document.getElementById('total-users').classList.add('skeleton');
-            document.getElementById('total-questions').classList.add('skeleton');
-            document.getElementById('total-answers').classList.add('skeleton');
-            document.getElementById('total-best-answers').classList.add('skeleton');
+            showSpinner('dashboard');
 
             try {
-                const usersSnapshot = await db.collection('users').get();
+                const [usersSnapshot, questionsSnapshot, answersSnapshot, bestAnswersSnapshot] = await Promise.all([
+                    db.collection('users').get(),
+                    db.collection('questions').get(),
+                    db.collection('answers').get(),
+                    db.collection('answers').where('isBestAnswer', '==', true).get()
+                ]);
+
                 document.getElementById('total-users').textContent = usersSnapshot.size;
-            } catch (error) {
-                console.error('Error fetching users:', error);
-                document.getElementById('total-users').textContent = 'Error';
-            }
-
-            try {
-                const questionsSnapshot = await db.collection('questions').get();
                 document.getElementById('total-questions').textContent = questionsSnapshot.size;
-            } catch (error) {
-                console.error('Error fetching questions:', error);
-                document.getElementById('total-questions').textContent = 'Error';
-            }
-
-            try {
-                const answersSnapshot = await db.collection('answers').get();
                 document.getElementById('total-answers').textContent = answersSnapshot.size;
-            } catch (error) {
-                console.error('Error fetching answers:', error);
-                document.getElementById('total-answers').textContent = 'Error';
-            }
-
-            try {
-                const bestAnswersSnapshot = await db.collection('answers').where('isBestAnswer', '==', true).get();
                 document.getElementById('total-best-answers').textContent = bestAnswersSnapshot.size;
+
             } catch (error) {
-                console.error('Error fetching best answers:', error);
+                console.error('Error fetching dashboard stats:', error);
+                document.getElementById('total-users').textContent = 'Error';
+                document.getElementById('total-questions').textContent = 'Error';
+                document.getElementById('total-answers').textContent = 'Error';
                 document.getElementById('total-best-answers').textContent = 'Error';
             } finally {
-                document.getElementById('total-users').classList.remove('skeleton');
-                document.getElementById('total-questions').classList.remove('skeleton');
-                document.getElementById('total-answers').classList.remove('skeleton');
-                document.getElementById('total-best-answers').classList.remove('skeleton');
+                hideSpinner('dashboard');
             }
         };
 
         const fetchAndPopulateQnA = async () => {
+            showSpinner('qna');
             const questionsTableBody = document.querySelector('#questions-table tbody');
-            questionsTableBody.innerHTML = '<tr><td colspan="4"><div class="skeleton text"></div></td></tr>';
+            questionsTableBody.innerHTML = '';
             
             try {
                 const questionsSnapshot = await db.collection('questions').orderBy('createdAt', 'desc').get();
@@ -613,6 +622,8 @@
             } catch (error) {
                 console.error('Error fetching Q&A:', error);
                 questionsTableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
+            } finally {
+                hideSpinner('qna');
             }
         };
 
@@ -670,8 +681,9 @@
         };
 
         const fetchAndPopulateUsers = async () => {
+            showSpinner('users');
             const userTableBody = document.querySelector('#user-table tbody');
-            userTableBody.innerHTML = '<tr><td colspan="5"><div class="skeleton text"></div></td></tr>';
+            userTableBody.innerHTML = '';
             try {
                 const usersSnapshot = await db.collection('users').get();
                 userTableBody.innerHTML = '';
@@ -699,6 +711,8 @@
             } catch (error) {
                 console.error('Error fetching users:', error);
                 userTableBody.innerHTML = '<tr><td colspan="5">Error loading data.</td></tr>';
+            } finally {
+                hideSpinner('users');
             }
         };
 
@@ -746,8 +760,9 @@
         };
         
         const fetchAndPopulateRanks = async () => {
+            showSpinner('ranks');
             const rankTableBody = document.querySelector('#rank-table tbody');
-            rankTableBody.innerHTML = '<tr><td colspan="4"><div class="skeleton text"></div></td></tr>';
+            rankTableBody.innerHTML = '';
             try {
                 const ranksSnapshot = await db.collection('ranks').get();
                 rankTableBody.innerHTML = '';
@@ -790,6 +805,8 @@
             } catch (error) {
                 console.error('Error fetching ranks:', error);
                 rankTableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
+            } finally {
+                hideSpinner('ranks');
             }
         };
 
@@ -806,3 +823,87 @@
             const rankData = {
                 name: name,
                 points: 0,
+                questions: 0,
+                answers: 0,
+                bestAnswers: 0,
+            };
+            rankData[metric] = value;
+
+            try {
+                await db.collection('ranks').add(rankData);
+                alert('Rank added successfully!');
+                fetchAndPopulateRanks();
+                document.getElementById('rank-name-input').value = '';
+                document.getElementById('rank-value-input').value = '';
+            } catch (error) {
+                alert('Failed to add rank. Please check your Firestore rules and connection.');
+                console.error('Error adding rank:', error);
+            }
+        };
+
+        const editRank = async (rankId, currentName, currentMetric, currentValue) => {
+            const newName = prompt("Edit rank name:", currentName);
+            if (!newName) return;
+
+            const metricMap = {
+                'points': 'points',
+                'questions': 'questions',
+                'answers': 'answers',
+                'bestanswers': 'bestAnswers'
+            };
+            const newMetricText = prompt(`Current metric: "${currentMetric}". Enter new metric (points, questions, answers, bestAnswers):`, currentMetric);
+            const newMetric = metricMap[newMetricText.toLowerCase()];
+            if (!newMetric) {
+                alert('Invalid metric entered. Please use one of: points, questions, answers, bestAnswers');
+                return;
+            }
+
+            const newValue = parseInt(prompt(`Current value: "${currentValue}". Enter new value:`, currentValue), 10);
+            if (isNaN(newValue) || newValue < 0) {
+                alert('Invalid value entered. Please enter a non-negative number.');
+                return;
+            }
+
+            const updatedData = {
+                name: newName,
+                points: 0,
+                questions: 0,
+                answers: 0,
+                bestAnswers: 0,
+            };
+            updatedData[newMetric] = newValue;
+
+            try {
+                await db.collection('ranks').doc(rankId).update(updatedData);
+                alert('Rank updated successfully!');
+                fetchAndPopulateRanks();
+            } catch (error) {
+                alert('Failed to edit rank.');
+                console.error('Error editing rank:', error);
+            }
+        };
+
+        const deleteRank = async (rankId) => {
+            if (confirm('Are you sure you want to delete this rank?')) {
+                try {
+                    await db.collection('ranks').doc(rankId).delete();
+                    alert('Rank deleted successfully!');
+                    fetchAndPopulateRanks();
+                } catch (error) {
+                    alert('Failed to delete rank.');
+                    console.error('Error deleting rank:', error);
+                }
+            }
+        };
+
+        document.querySelector('.close-btn').onclick = function() {
+            document.getElementById('infoModal').style.display = 'none';
+        }
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('infoModal')) {
+                document.getElementById('infoModal').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
