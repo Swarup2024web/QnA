@@ -34,7 +34,6 @@
             overflow-x: hidden;
         }
         
-        /* New Header Navigation */
         .header {
             background-color: var(--card-background);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -42,7 +41,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -53,14 +52,21 @@
             font-weight: 700;
             color: var(--primary-color);
             margin: 0;
+            flex-shrink: 0;
         }
 
         .header .nav-menu {
             display: flex;
-            gap: 25px;
             align-items: center;
             flex-grow: 1;
-            justify-content: center;
+            justify-content: flex-start;
+            margin: 0 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .header .nav-menu::-webkit-scrollbar {
+            display: none;
         }
 
         .header .nav-item {
@@ -71,12 +77,13 @@
             transition: color 0.3s ease;
             text-decoration: none;
             font-weight: 500;
+            padding: 5px 15px;
+            white-space: nowrap;
         }
 
         .header .nav-item.active {
             color: var(--primary-color);
             border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 5px;
         }
         
         .header .nav-item:hover {
@@ -99,6 +106,9 @@
             color: var(--secondary-text-color);
             font-weight: 500;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
         }
 
         .logout-btn {
@@ -118,19 +128,21 @@
         
         @media (max-width: 768px) {
             .header {
-                flex-direction: column;
-                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .header .logo, .header .user-info {
+                width: 100%;
+                text-align: center;
+                justify-content: center;
+                margin-bottom: 10px;
             }
             .header .nav-menu {
-                justify-content: space-around;
+                order: 1;
                 width: 100%;
-                gap: 0;
-            }
-            .header .nav-item span {
-                display: none;
-            }
-            .header .nav-item .material-symbols-outlined {
+                justify-content: flex-start;
                 margin: 0;
+                padding: 0 10px;
             }
         }
 
@@ -163,7 +175,6 @@
             margin-bottom: 20px;
         }
         
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -192,7 +203,6 @@
             margin: 0;
         }
         
-        /* Tables */
         .table-container {
             overflow-x: auto;
             width: 100%;
@@ -219,7 +229,6 @@
             background-color: #fafafa;
         }
         
-        /* Buttons */
         button {
             padding: 8px 16px;
             border: none;
@@ -240,7 +249,6 @@
             white-space: nowrap;
         }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -278,7 +286,6 @@
             text-decoration: none;
         }
         
-        /* Rank Form Styles */
         #rank-form-container {
             display: flex;
             flex-direction: column;
@@ -318,7 +325,6 @@
             margin-top: 10px;
         }
 
-        /* Responsive adjustments */
         @media (max-width: 600px) {
             .form-row {
                 flex-direction: column;
@@ -353,6 +359,10 @@
                 <a href="#" class="nav-item" data-tab="ranks">
                     <span class="material-symbols-outlined">military_tech</span>
                     <span>Ranks</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="subjects">
+                    <span class="material-symbols-outlined">book</span>
+                    <span>Subjects</span>
                 </a>
             </nav>
             <div class="user-info">
@@ -453,6 +463,11 @@
                     </table>
                 </div>
             </section>
+
+            <section id="subjects" class="content-section">
+                <h2>Manage Subjects</h2>
+                <p>This section is currently under development. Please check back later.</p>
+            </section>
         </div>
     </div>
 
@@ -481,9 +496,6 @@
         let currentUserRole = null;
         let currentUserId = null;
         
-        // This is a flag to prevent multiple initializations.
-        // It's a good practice, but not strictly necessary here since onAuthStateChanged
-        // is designed to only fire once for the initial state.
         let isDashboardInitialized = false;
 
         auth.onAuthStateChanged(async (user) => {
@@ -530,7 +542,7 @@
         
         document.querySelectorAll('.nav-item').forEach(navItem => {
             navItem.addEventListener('click', (event) => {
-                event.preventDefault(); // Prevent default anchor behavior
+                event.preventDefault();
                 const navId = event.currentTarget.dataset.tab;
                 showSection(navId);
             });
@@ -559,6 +571,10 @@
                     break;
                 case 'ranks':
                     fetchAndPopulateRanks();
+                    break;
+                case 'subjects':
+                    // Placeholder for subjects content
+                    console.log('Subjects section selected.');
                     break;
             }
         };
@@ -674,16 +690,12 @@
 
         const deleteAnswer = (answerId, questionId) => {
              if (confirm('Are you sure you want to delete this answer?')) {
-                // In a real application, you would call a Cloud Function here to ensure
-                // that all related data (e.g., user points) is correctly handled.
-                // For this example, we'll provide a message to the user.
                 alert('This action would trigger a secure Cloud Function to handle the deletion and associated data updates.');
             }
         };
 
         const deleteQuestion = (questionId) => {
             if (confirm('Are you sure you want to delete this question and all its answers? This action cannot be undone.')) {
-                // In a real application, a Cloud Function would handle the cascade deletion.
                 alert('This action would trigger a secure Cloud Function to handle the cascade deletion.');
             }
         };
@@ -727,7 +739,6 @@
                 return;
             }
             
-            // Use a simple prompt for demonstration, but a modal would be better
             const newRole = prompt(`Current role: "${currentRole}". Enter new role (student, tutor, admin):`);
             if (newRole && ['student', 'tutor', 'admin'].includes(newRole.toLowerCase())) {
                 try {
@@ -749,9 +760,6 @@
                 return;
             }
             if (confirm(`Are you sure you want to permanently delete user: ${userId}? This action cannot be undone.`)) {
-                // In a real application, this would trigger a Cloud Function to handle
-                // all associated data deletion (questions, answers, points, etc.) and
-                // then delete the user account from Firebase Authentication.
                 alert('User deletion requires a backend Cloud Function to ensure data integrity and security. This action is not directly supported client-side.');
             }
         };
@@ -894,8 +902,6 @@
                     alert('Rank deleted successfully!');
                     fetchAndPopulateRanks();
                 } catch (error) {
-                    alert('Failed to delete rank.');
-                    console.error('Error deleting rank:', error);
                 }
             }
         };
