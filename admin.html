@@ -20,7 +20,6 @@
             --border-color: #e0e6ed;
             --danger-color: #ff6b6b;
             --success-color: #27ae60;
-            --warning-color: #f39c12;
         }
 
         body {
@@ -37,78 +36,41 @@
         .header {
             background-color: var(--card-background);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            padding: 15px 20px;
+            padding: 20px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: nowrap;
+            flex-direction: column;
             position: sticky;
             top: 0;
             z-index: 100;
         }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
         
-        .header .logo {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: var(--primary-color);
+        .header-row.title-row {
+            margin-bottom: 10px;
+        }
+
+        .header-row h1 {
             margin: 0;
-            flex-shrink: 0;
-        }
-
-        .header .nav-menu {
-            display: flex;
-            align-items: center;
-            flex-grow: 1;
-            justify-content: flex-start;
-            margin: 0 20px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        .header .nav-menu::-webkit-scrollbar {
-            display: none;
-        }
-
-        .header .nav-item {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            color: var(--secondary-text-color);
-            transition: color 0.3s ease;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 5px 15px;
-            white-space: nowrap;
-        }
-
-        .header .nav-item.active {
+            font-size: 1.8em;
             color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-        }
-        
-        .header .nav-item:hover {
-            color: var(--primary-color);
-        }
-
-        .header .nav-item .material-symbols-outlined {
-            font-size: 20px;
-            margin-right: 5px;
         }
 
         .user-info {
             display: flex;
             align-items: center;
             gap: 15px;
-            flex-shrink: 0;
+            color: var(--secondary-text-color);
         }
 
         .user-info span {
-            color: var(--secondary-text-color);
             font-weight: 500;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 150px;
         }
 
         .logout-btn {
@@ -122,27 +84,71 @@
             transition: background-color 0.3s ease;
             font-weight: 500;
         }
+
         .logout-btn:hover {
             background-color: #d64949;
         }
         
+        .nav-menu-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        
+        .nav-menu-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            transition: color 0.3s ease;
+            padding: 5px 10px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-item.active .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        .nav-item span {
+            font-size: 0.8em;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
         @media (max-width: 768px) {
-            .header {
-                flex-wrap: wrap;
+            .header-row {
                 justify-content: center;
             }
-            .header .logo, .header .user-info {
-                width: 100%;
+            .header-row h1 {
                 text-align: center;
-                justify-content: center;
+                width: 100%;
                 margin-bottom: 10px;
             }
-            .header .nav-menu {
-                order: 1;
+            .user-info {
+                justify-content: center;
                 width: 100%;
-                justify-content: flex-start;
-                margin: 0;
-                padding: 0 10px;
+            }
+            .header-row.title-row {
+                flex-direction: column;
             }
         }
 
@@ -342,32 +348,38 @@
 <body>
     <div id="admin-content" style="display: none;">
         <header class="header">
-            <h1 class="logo">Admin</h1>
-            <nav class="nav-menu">
-                <a href="#" class="nav-item active" data-tab="dashboard">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="nav-item" data-tab="qna">
-                    <span class="material-symbols-outlined">forum</span>
-                    <span>Q&A</span>
-                </a>
-                <a href="#" class="nav-item" data-tab="users">
-                    <span class="material-symbols-outlined">group</span>
-                    <span>Users</span>
-                </a>
-                <a href="#" class="nav-item" data-tab="ranks">
-                    <span class="material-symbols-outlined">military_tech</span>
-                    <span>Ranks</span>
-                </a>
-                <a href="#" class="nav-item" data-tab="subjects">
-                    <span class="material-symbols-outlined">book</span>
-                    <span>Subjects</span>
-                </a>
-            </nav>
-            <div class="user-info">
-                <span id="welcome-username"></span>
-                <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+            <div class="header-row title-row">
+                <h1>Admin Dashboard</h1>
+            </div>
+            <div class="header-row">
+                <div class="user-info">
+                    <span id="welcome-username"></span>
+                    <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+                </div>
+            </div>
+            <div class="nav-menu-container">
+                <nav class="nav-menu">
+                    <a href="#" class="nav-item active" data-tab="dashboard">
+                        <span class="material-symbols-outlined">dashboard</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tab="qna">
+                        <span class="material-symbols-outlined">forum</span>
+                        <span>Q&A</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tab="subjects">
+                        <span class="material-symbols-outlined">book</span>
+                        <span>Subjects</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tab="users">
+                        <span class="material-symbols-outlined">group</span>
+                        <span>Users</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tab="ranks">
+                        <span class="material-symbols-outlined">military_tech</span>
+                        <span>Ranks</span>
+                    </a>
+                </nav>
             </div>
         </header>
 
@@ -405,6 +417,11 @@
                         <tbody></tbody>
                     </table>
                 </div>
+            </section>
+            
+            <section id="subjects" class="content-section">
+                <h2>Manage Subjects</h2>
+                <p>This section is currently under development. Please check back later.</p>
             </section>
             
             <section id="users" class="content-section">
@@ -463,11 +480,6 @@
                     </table>
                 </div>
             </section>
-
-            <section id="subjects" class="content-section">
-                <h2>Manage Subjects</h2>
-                <p>This section is currently under development. Please check back later.</p>
-            </section>
         </div>
     </div>
 
@@ -495,7 +507,6 @@
 
         let currentUserRole = null;
         let currentUserId = null;
-        
         let isDashboardInitialized = false;
 
         auth.onAuthStateChanged(async (user) => {
@@ -566,15 +577,14 @@
                 case 'qna':
                     fetchAndPopulateQnA();
                     break;
+                case 'subjects':
+                    console.log('Subjects section selected.');
+                    break;
                 case 'users':
                     fetchAndPopulateUsers();
                     break;
                 case 'ranks':
                     fetchAndPopulateRanks();
-                    break;
-                case 'subjects':
-                    // Placeholder for subjects content
-                    console.log('Subjects section selected.');
                     break;
             }
         };
@@ -902,6 +912,8 @@
                     alert('Rank deleted successfully!');
                     fetchAndPopulateRanks();
                 } catch (error) {
+                    alert('Failed to delete rank.');
+                    console.error('Error deleting rank:', error);
                 }
             }
         };
