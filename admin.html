@@ -1,925 +1,904 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <style>
-        :root {
-            --primary-color: #4a90e2;
-            --accent-color: #50e3c2;
-            --background-color: #f0f2f5;
-            --card-background: #fff;
-            --text-color: #333;
-            --secondary-text-color: #7f8c8d;
-            --border-color: #e0e6ed;
-            --danger-color: #ff6b6b;
-            --success-color: #27ae60;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --primary-color: #4a90e2;
+      --accent-color: #50e3c2;
+      --background-color: #f0f2f5;
+      --card-background: #fff;
+      --text-color: #333;
+      --secondary-text-color: #7f8c8d;
+      --border-color: #e0e6ed;
+      --danger-color: #ff6b6b;
+      --success-color: #27ae60;
+      --warning-color: #f39c12;
+    }* { box-sizing: border-box; }
 
-        body {
-            font-family: 'Roboto', Arial, sans-serif;
-            margin: 0;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
-        
-        .header {
-            background-color: var(--card-background);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
 
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-        
-        .header-top h1 {
-            margin: 0;
-            font-size: 1.8em;
-            color: var(--primary-color);
-        }
+/* Header */
+.header {
+  background-color: var(--card-background);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+.header-top h1 {
+  margin: 0;
+  font-size: 1.8em;
+  color: var(--primary-color);
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--secondary-text-color);
+  flex-wrap: wrap;
+}
+.user-info span { font-weight: 500; white-space: nowrap; }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: var(--secondary-text-color);
-        }
+.logout-btn {
+  background-color: var(--danger-color);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+  font-weight: 500;
+}
+.logout-btn:hover { background-color: #d64949; }
 
-        .user-info span {
-            font-weight: 500;
-            white-space: nowrap;
-        }
+.nav-menu-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+}
+.nav-menu-container::-webkit-scrollbar { display: none; }
 
-        .logout-btn {
-            background-color: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.3s ease;
-            font-weight: 500;
-        }
+.nav-menu { display: flex; justify-content: flex-start; gap: 10px; }
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; cursor: pointer;
+  color: var(--secondary-text-color); transition: color 0.3s ease; padding: 5px 10px;
+  text-decoration: none; flex-shrink: 0;
+}
+.nav-item.active { color: var(--primary-color); }
+.nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+.nav-item span { font-size: 0.8em; font-weight: 500; margin-top: 4px; white-space: nowrap; }
 
-        .logout-btn:hover {
-            background-color: #d64949;
-        }
-        
-        .nav-menu-container {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            border-top: 1px solid var(--border-color);
-            padding-top: 10px;
-        }
-        
-        .nav-menu-container::-webkit-scrollbar {
-            display: none;
-        }
+@media (max-width: 768px) {
+  .header-top { flex-direction: column; text-align: center; }
+  .header-top h1 { margin-bottom: 10px; }
+  .user-info { justify-content: center; width: 100%; }
+}
 
-        .nav-menu {
-            display: flex;
-            justify-content: flex-start;
-            gap: 10px;
-        }
+/* Main */
+.main-content {
+  max-width: 1200px; width: 100%; margin: 20px auto; padding: 0 20px; flex-grow: 1;
+}
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            color: var(--secondary-text-color);
-            transition: color 0.3s ease;
-            padding: 5px 10px;
-            text-decoration: none;
-            flex-shrink: 0;
-        }
+.content-section {
+  display: none; background-color: var(--card-background); padding: 30px; border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); min-height: 500px;
+}
+.content-section.active { display: block; }
 
-        .nav-item.active {
-            color: var(--primary-color);
-        }
+h2 {
+  font-size: 1.5em; color: var(--primary-color); border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px; margin-bottom: 20px;
+}
 
-        .nav-item.active .material-symbols-outlined {
-            font-variation-settings: 'FILL' 1;
-        }
+/* Cards */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
+}
+.stat-card {
+  background-color: var(--background-color); padding: 20px; border-radius: 8px; text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.stat-card:hover { transform: translateY(-5px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+.stat-card h3 { margin: 0 0 10px; font-size: 1.2em; color: var(--secondary-text-color); }
+.stat-card p { font-size: 2.5em; font-weight: bold; color: var(--primary-color); margin: 0; }
 
-        .nav-item span {
-            font-size: 0.8em;
-            font-weight: 500;
-            margin-top: 4px;
-            white-space: nowrap;
-        }
+/* Table */
+.table-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.table-toolbar input, .table-toolbar select { padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; }
 
-        @media (max-width: 768px) {
-            .header-top {
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                text-align: center;
-            }
-            .header-top h1 {
-                margin-bottom: 10px;
-            }
-            .user-info {
-                justify-content: center;
-                width: 100%;
-            }
-        }
+.table-container { overflow-x: auto; width: 100%; margin-top: 12px; }
+table { width: 100%; border-collapse: collapse; margin-top: 8px; min-width: 700px; }
+th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+th { background-color: #f8f8f8; font-weight: 500; text-transform: uppercase; font-size: 0.9em; color: var(--secondary-text-color); }
+tr:hover { background-color: #fafafa; }
 
-        .main-content {
-            max-width: 1200px;
-            width: 100%;
-            margin: 20px auto;
-            padding: 0 20px;
-            box-sizing: border-box;
-            flex-grow: 1;
-        }
+/* Responsive stacked table */
+@media (max-width: 640px) {
+  table { min-width: 0; }
+  thead { display: none; }
+  tr { display: block; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+  td { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 0; border-bottom: 1px solid var(--border-color); }
+  td:last-child { border-bottom: 0; }
+  td::before { content: attr(data-label); font-weight: 600; color: var(--secondary-text-color); }
+  .action-cell { display: flex; gap: 8px; flex-wrap: wrap; }
+}
 
-        .content-section {
-            display: none;
-            background-color: var(--card-background);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            min-height: 500px;
-        }
-        .content-section.active {
-            display: block;
-        }
+button { padding: 8px 16px; border: none; border-radius: 20px; cursor: pointer; font-size: 0.9em; margin-right: 5px; transition: background-color 0.2s, transform 0.2s; font-weight: 500; }
+button:hover { transform: translateY(-2px); }
+button.action { background-color: var(--primary-color); color: white; }
+button.ban { background-color: var(--danger-color); color: white; }
+button.add { background-color: var(--success-color); color: white; }
+button.warn { background-color: var(--warning-color); color: #fff; }
+.action-cell { white-space: nowrap; }
 
-        h2 {
-            font-size: 1.5em;
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        .stat-card {
-            background-color: var(--background-color);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        .stat-card h3 {
-            margin: 0 0 10px;
-            font-size: 1.2em;
-            color: var(--secondary-text-color);
-        }
-        .stat-card p {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin: 0;
-        }
-        
-        .table-container {
-            overflow-x: auto;
-            width: 100%;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            min-width: 600px;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-        th {
-            background-color: #f8f8f8;
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: 0.9em;
-            color: var(--secondary-text-color);
-        }
-        tr:hover {
-            background-color: #fafafa;
-        }
-        
-        button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9em;
-            margin-right: 5px;
-            transition: background-color 0.2s, transform 0.2s;
-            font-weight: 500;
-        }
-        button:hover {
-            transform: translateY(-2px);
-        }
-        button.action { background-color: var(--primary-color); color: white; }
-        button.ban { background-color: var(--danger-color); color: white; }
-        button.add { background-color: var(--success-color); color: white; }
-        .action-cell {
-            white-space: nowrap;
-        }
+/* Modal */
+.modal { display: none; position: fixed; z-index: 1000; inset: 0; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+.modal-content { background-color: var(--card-background); padding: 25px; border-radius: 12px; width: 90%; max-width: 640px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); position: relative; max-height: 80vh; overflow-y: auto; }
+.close-btn { color: var(--secondary-text-color); position: absolute; right: 16px; top: 10px; font-size: 32px; font-weight: bold; cursor: pointer; transition: color 0.3s; }
+.close-btn:hover, .close-btn:focus { color: var(--primary-color); text-decoration: none; }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: var(--card-background);
-            padding: 25px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-            position: relative;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .close-btn {
-            color: var(--secondary-text-color);
-            float: right;
-            font-size: 32px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        .close-btn:hover,
-        .close-btn:focus {
-            color: var(--primary-color);
-            text-decoration: none;
-        }
-        
-        #rank-form-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background-color: var(--background-color);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
+.modal h3 { margin-top: 0; color: var(--primary-color); }
+.form-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+.form-grid label { font-weight: 500; font-size: 0.95em; color: var(--secondary-text-color); }
+.form-grid input, .form-grid select, .form-grid textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; }
 
-        #rank-form-container h3 {
-            margin: 0;
-            color: var(--primary-color);
-        }
+/* Toasts */
+.toast-container { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 1100; }
+.toast { background: #222; color: #fff; padding: 10px 14px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); opacity: 0.95; }
+.toast.success { background: var(--success-color); }
+.toast.error { background: var(--danger-color); }
+.toast.warn { background: var(--warning-color); }
 
-        .form-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+/* Loader */
+.loader { width: 22px; height: 22px; border: 3px solid #eee; border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-        .form-row label {
-            min-width: 120px;
-            font-weight: 500;
-        }
+/* Utility */
+.muted { color: var(--secondary-text-color); }
+.flex { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.justify-between { justify-content: space-between; }
 
-        .form-row input, .form-row select {
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .form-actions {
-            margin-top: 10px;
-        }
-
-        @media (max-width: 600px) {
-            .form-row {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .form-row label {
-                margin-bottom: 5px;
-            }
-            .form-row input, .form-row select {
-                width: 100%;
-            }
-        }
-    </style>
+  </style>
 </head>
 <body>
-    <div id="admin-content" style="display: none;">
-        <header class="header">
-            <div class="header-top">
-                <h1>Admin Dashboard</h1>
-                <div class="user-info">
-                    <span id="welcome-username"></span>
-                    <button class="logout-btn" onclick="handleLogout()">Log Out</button>
-                </div>
-            </div>
-            <div class="nav-menu-container">
-                <nav class="nav-menu">
-                    <a href="#" class="nav-item active" data-tab="dashboard">
-                        <span class="material-symbols-outlined">dashboard</span>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="#" class="nav-item" data-tab="qna">
-                        <span class="material-symbols-outlined">forum</span>
-                        <span>Q&A</span>
-                    </a>
-                    <a href="#" class="nav-item" data-tab="subjects">
-                        <span class="material-symbols-outlined">book</span>
-                        <span>Subjects</span>
-                    </a>
-                    <a href="#" class="nav-item" data-tab="users">
-                        <span class="material-symbols-outlined">group</span>
-                        <span>Users</span>
-                    </a>
-                    <a href="#" class="nav-item" data-tab="ranks">
-                        <span class="material-symbols-outlined">military_tech</span>
-                        <span>Ranks</span>
-                    </a>
-                </nav>
-            </div>
-        </header>
-
-        <div class="main-content">
-            <section id="dashboard" class="content-section active">
-                <h2>Dashboard</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Total Users</h3>
-                        <p id="total-users">Loading...</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Questions</h3>
-                        <p id="total-questions">Loading...</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Answers</h3>
-                        <p id="total-answers">Loading...</p>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="qna" class="content-section">
-                <h2>Manage Questions & Answers</h2>
-                <div class="table-container">
-                    <table id="questions-table">
-                        <thead>
-                            <tr>
-                                <th>Question ID</th>
-                                <th>User</th>
-                                <th>Title</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </section>
-            
-            <section id="subjects" class="content-section">
-                <h2>Manage Subjects</h2>
-                <p>This section is currently under development. Please check back later.</p>
-            </section>
-            
-            <section id="users" class="content-section">
-                <h2>Manage Users</h2>
-                <div class="table-container">
-                    <table id="user-table">
-                        <thead>
-                            <tr>
-                                <th>User ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </section>
-            
-            <section id="ranks" class="content-section">
-                <h2>Manage Ranks</h2>
-                
-                <div id="rank-form-container">
-                    <h3>Create New Rank</h3>
-                    <div class="form-row">
-                        <label for="rank-name-input">Rank Name:</label>
-                        <input type="text" id="rank-name-input" placeholder="e.g., Expert">
-                    </div>
-                    <div class="form-row">
-                        <label for="rank-metric-select">Required Criteria:</label>
-                        <select id="rank-metric-select">
-                            <option value="points">Points</option>
-                            <option value="questions">Questions Asked</option>
-                            <option value="answers">Answers Given</option>
-                            <option value="bestAnswers">Best Answers</option>
-                        </select>
-                        <input type="number" id="rank-value-input" placeholder="Value (e.g., 100)" min="0">
-                    </div>
-                    <div class="form-actions">
-                        <button class="action add" onclick="createRank()">Create Rank</button>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table id="rank-table">
-                        <thead>
-                            <tr>
-                                <th>Rank Name</th>
-                                <th>Criteria</th>
-                                <th>Value</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </section>
+  <div id="admin-content" style="display:none;">
+    <header class="header">
+      <div class="header-top">
+        <h1>Admin Dashboard</h1>
+        <div class="user-info">
+          <span id="welcome-username"></span>
+          <button class="logout-btn" id="logoutBtn">Log Out</button>
         </div>
+      </div>
+      <div class="nav-menu-container">
+        <nav class="nav-menu">
+          <a href="#" class="nav-item active" data-tab="dashboard">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+          </a>
+          <a href="#" class="nav-item" data-tab="qna">
+            <span class="material-symbols-outlined">forum</span>
+            <span>Q&A</span>
+          </a>
+          <a href="#" class="nav-item" data-tab="subjects">
+            <span class="material-symbols-outlined">book</span>
+            <span>Subjects</span>
+          </a>
+          <a href="#" class="nav-item" data-tab="users">
+            <span class="material-symbols-outlined">group</span>
+            <span>Users</span>
+          </a>
+          <a href="#" class="nav-item" data-tab="ranks">
+            <span class="material-symbols-outlined">military_tech</span>
+            <span>Ranks</span>
+          </a>
+        </nav>
+      </div>
+    </header><div class="main-content">
+  <!-- Dashboard -->
+  <section id="dashboard" class="content-section active">
+    <h2>Dashboard</h2>
+    <div class="stats-grid">
+      <div class="stat-card"><h3>Total Users</h3><p id="total-users">—</p></div>
+      <div class="stat-card"><h3>Total Questions</h3><p id="total-questions">—</p></div>
+      <div class="stat-card"><h3>Total Answers</h3><p id="total-answers">—</p></div>
+    </div>
+  </section>
+
+  <!-- QnA -->
+  <section id="qna" class="content-section">
+    <h2>Manage Questions & Answers</h2>
+    <div class="table-toolbar">
+      <input id="qnaSearch" type="search" placeholder="Search by title or user…" />
+      <select id="qnaLimit">
+        <option value="25">Last 25</option>
+        <option value="50" selected>Last 50</option>
+        <option value="100">Last 100</option>
+      </select>
+      <button class="warn" id="refreshQna">Refresh</button>
+    </div>
+    <div class="table-container">
+      <table id="questions-table">
+        <thead>
+          <tr>
+            <th>Question ID</th>
+            <th>User</th>
+            <th>Title</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="flex justify-between" id="qnaPager"></div>
+  </section>
+
+  <!-- Subjects -->
+  <section id="subjects" class="content-section">
+    <h2>Manage Subjects</h2>
+    <p class="muted">This section is currently under development. Please check back later.</p>
+  </section>
+
+  <!-- Users -->
+  <section id="users" class="content-section">
+    <h2>Manage Users</h2>
+    <div class="table-toolbar">
+      <input id="userSearch" type="search" placeholder="Search by name or email…" />
+      <select id="userRoleFilter">
+        <option value="">All roles</option>
+        <option value="student">Student</option>
+        <option value="tutor">Tutor</option>
+        <option value="admin">Admin</option>
+        <option value="super_admin">Super Admin</option>
+      </select>
+      <button class="warn" id="refreshUsers">Refresh</button>
+    </div>
+    <div class="table-container">
+      <table id="user-table">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="flex justify-between" id="userPager"></div>
+  </section>
+
+  <!-- Ranks -->
+  <section id="ranks" class="content-section">
+    <h2>Manage Ranks</h2>
+
+    <div id="rank-form-container" class="form-grid" style="background: var(--background-color); padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+      <h3 style="margin:0;">Create New Rank</h3>
+      <label>Rank Name
+        <input type="text" id="rank-name-input" placeholder="e.g., Expert" />
+      </label>
+      <label>Required Criteria
+        <div class="flex">
+          <select id="rank-metric-select">
+            <option value="points">Points</option>
+            <option value="questions">Questions Asked</option>
+            <option value="answers">Answers Given</option>
+            <option value="bestAnswers">Best Answers</option>
+          </select>
+          <input type="number" id="rank-value-input" placeholder="Value (e.g., 100)" min="0" />
+          <button class="add" id="createRankBtn">Create Rank</button>
+        </div>
+      </label>
     </div>
 
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2 id="modal-title"></h2>
-            <div id="modal-body"></div>
-        </div>
+    <div class="table-container">
+      <table id="rank-table">
+        <thead>
+          <tr>
+            <th>Rank Name</th>
+            <th>Criteria</th>
+            <th>Value</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
+  </section>
+</div>
 
-    <script>
-        const firebaseConfig = {
-          apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
-          authDomain: "qnasite-6d9cc.firebaseapp.com",
-          projectId: "qnasite-6d9cc",
-          storageBucket: "qnasite-6d9cc.firebasestorage.app",
-          messagingSenderId: "707268852195",
-          appId: "1:707268852195:web:05e13ee17b0d96253688d6"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+  </div>  <!-- Reusable Modal -->  <div id="appModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <span class="close-btn" data-close>&times;</span>
+      <h3 id="modalTitle"></h3>
+      <div id="modalBody"></div>
+      <div class="flex" style="margin-top: 12px; justify-content: flex-end;">
+        <button class="warn" data-close>Close</button>
+      </div>
+    </div>
+  </div>  <!-- Toasts -->  <div class="toast-container" id="toastContainer"></div>  <script>
+    // =================== Firebase ===================
+    const firebaseConfig = {
+      apiKey: "AIzaSyApDnDrhy_Z0zvLoWfvsmP4JJSUIdtSulM",
+      authDomain: "qnasite-6d9cc.firebaseapp.com",
+      projectId: "qnasite-6d9cc",
+      storageBucket: "qnasite-6d9cc.firebasestorage.app",
+      messagingSenderId: "707268852195",
+      appId: "1:707268852195:web:05e13ee17b0d96253688d6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        let currentUserRole = null;
-        let currentUserId = null;
-        let isDashboardInitialized = false;
+    // =================== State ===================
+    let currentUserRole = null;
+    let currentUserId = null;
+    let isDashboardInitialized = false;
 
-        auth.onAuthStateChanged(async (user) => {
-            if (isDashboardInitialized) return;
-            isDashboardInitialized = true;
-            
-            const adminContent = document.getElementById('admin-content');
-            
-            if (user) {
-                currentUserId = user.uid;
-                try {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        currentUserRole = userData.role;
-                        
-                        const roleName = currentUserRole === 'super_admin' ? 'Super Administrator' :
-                                         currentUserRole === 'admin' ? 'Administrator' :
-                                         userData.role;
-                                         
-                        document.getElementById('welcome-username').textContent = `${userData.username} (${roleName})`;
-                        
-                        if (currentUserRole === 'admin' || currentUserRole === 'super_admin') {
-                            adminContent.style.display = 'flex';
-                            showSection('dashboard');
-                        } else {
-                            alert('Access Denied. You do not have permission to view this page.');
-                            window.location.href = 'index.html';
-                        }
-                    } else {
-                        alert('Access Denied. User data not found.');
-                        window.location.href = 'index.html';
-                    }
-                } catch (error) {
-                    console.error("Authentication check failed:", error);
-                    alert("An error occurred during authentication. Please try again.");
-                    auth.signOut();
-                }
-            } else {
-                alert('Please log in to access this page.');
-                window.location.href = 'auth.html';
-            }
-        });
-        
-        document.querySelectorAll('.nav-item').forEach(navItem => {
-            navItem.addEventListener('click', (event) => {
-                event.preventDefault();
-                const navId = event.currentTarget.dataset.tab;
-                showSection(navId);
-            });
-        });
+    // Cached datasets for client-side pagination/search
+    let QUESTIONS_CACHE = [];
+    let USERS_CACHE = [];
 
-        const showSection = (id) => {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(id).classList.add('active');
+    // =================== Utilities ===================
+    const $ = (sel, parent=document) => parent.querySelector(sel);
+    const $$ = (sel, parent=document) => Array.from(parent.querySelectorAll(sel));
 
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`.nav-item[data-tab="${id}"]`).classList.add('active');
+    const showToast = (msg, type = 'success', timeout = 2500) => {
+      const cont = $('#toastContainer');
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      cont.appendChild(t);
+      setTimeout(() => { t.remove(); }, timeout);
+    };
 
-            switch(id) {
-                case 'dashboard':
-                    fetchDashboardStats();
-                    break;
-                case 'qna':
-                    fetchAndPopulateQnA();
-                    break;
-                case 'subjects':
-                    console.log('Subjects section selected.');
-                    break;
-                case 'users':
-                    fetchAndPopulateUsers();
-                    break;
-                case 'ranks':
-                    fetchAndPopulateRanks();
-                    break;
-            }
-        };
+    const withLoader = (el) => {
+      const prev = el.innerHTML;
+      el.dataset.prev = prev;
+      el.innerHTML = '<span class="loader"></span>';
+    };
+    const restoreLoader = (el) => {
+      if (el && el.dataset.prev !== undefined) el.innerHTML = el.dataset.prev;
+    };
 
-        const handleLogout = () => {
-            auth.signOut().then(() => {
-                window.location.href = 'auth.html';
-            }).catch(error => {
-                console.error("Logout failed:", error);
-                alert("An error occurred during logout.");
-            });
-        };
+    const renderLoadingRow = (tbody, cols, msg = 'Loading…') => {
+      tbody.innerHTML = `<tr><td colspan="${cols}" data-label="">${msg} <span class="loader"></span></td></tr>`;
+    };
+    const renderMessageRow = (tbody, cols, msg) => {
+      tbody.innerHTML = `<tr><td colspan="${cols}" data-label="">${msg}</td></tr>`;
+    };
 
-        const fetchDashboardStats = async () => {
-            try {
-                const [usersSnapshot, questionsSnapshot, answersSnapshot] = await Promise.all([
-                    db.collection('users').get(),
-                    db.collection('questions').get(),
-                    db.collection('answers').get()
-                ]);
+    // Simple client-side pagination
+    function paginate(items, page=1, perPage=10) {
+      const total = items.length; const totalPages = Math.max(1, Math.ceil(total / perPage));
+      const start = (page - 1) * perPage; const end = start + perPage;
+      return { pageItems: items.slice(start, end), page, totalPages, total };
+    }
+    function renderPager(container, page, totalPages, onChange) {
+      container.innerHTML = '';
+      const mk = (label, p, disabled=false) => {
+        const b = document.createElement('button');
+        b.textContent = label; b.className = 'action'; b.disabled = disabled;
+        b.onclick = () => onChange(p);
+        return b;
+      };
+      container.appendChild(mk('⟨ Prev', Math.max(1, page-1), page===1));
+      const info = document.createElement('span');
+      info.className = 'muted'; info.textContent = `Page ${page} of ${totalPages}`;
+      container.appendChild(info);
+      container.appendChild(mk('Next ⟩', Math.min(totalPages, page+1), page===totalPages));
+    }
 
-                document.getElementById('total-users').textContent = usersSnapshot.size;
-                document.getElementById('total-questions').textContent = questionsSnapshot.size;
-                document.getElementById('total-answers').textContent = answersSnapshot.size;
+    // Modal helpers
+    const appModal = $('#appModal');
+    const openModal = (title, bodyHTML) => {
+      $('#modalTitle').textContent = title;
+      $('#modalBody').innerHTML = bodyHTML;
+      appModal.style.display = 'flex';
+      appModal.setAttribute('aria-hidden', 'false');
+    };
+    const closeModal = () => {
+      appModal.style.display = 'none';
+      appModal.setAttribute('aria-hidden', 'true');
+      $('#modalBody').innerHTML = '';
+    };
+    appModal.addEventListener('click', (e) => {
+      if (e.target === appModal || e.target.hasAttribute('data-close')) closeModal();
+    });
 
-            } catch (error) {
-                console.error('Error fetching dashboard stats:', error);
-                document.getElementById('total-users').textContent = 'Error';
-                document.getElementById('total-questions').textContent = 'Error';
-                document.getElementById('total-answers').textContent = 'Error';
-            }
-        };
+    // =================== Auth Gate ===================
+    auth.onAuthStateChanged(async (user) => {
+      if (isDashboardInitialized) return; // avoid double init on hot reload
+      isDashboardInitialized = true;
 
-        const fetchAndPopulateQnA = async () => {
-            const questionsTableBody = document.querySelector('#questions-table tbody');
-            questionsTableBody.innerHTML = '<tr><td colspan="4">Loading questions...</td></tr>';
-            
-            try {
-                const questionsSnapshot = await db.collection('questions').orderBy('createdAt', 'desc').get();
-                questionsTableBody.innerHTML = '';
+      const adminContent = $('#admin-content');
+      if (!user) {
+        alert('Please log in to access this page.');
+        window.location.href = 'auth.html';
+        return;
+      }
 
-                if (questionsSnapshot.empty) {
-                    questionsTableBody.innerHTML = '<tr><td colspan="4">No questions found.</td></tr>';
-                    return;
-                }
+      try {
+        currentUserId = user.uid;
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists) throw new Error('User data not found');
 
-                for (const questionDoc of questionsSnapshot.docs) {
-                    const question = questionDoc.data();
-                    
-                    const userDoc = await db.collection('users').doc(question.userId).get();
-                    const username = userDoc.exists ? userDoc.data().username : 'Unknown User';
-                    
-                    const row = `
-                        <tr data-question-id="${questionDoc.id}">
-                            <td>${questionDoc.id}</td>
-                            <td>${username}</td>
-                            <td>${question.title}</td>
-                            <td class="action-cell">
-                                <button class="action" onclick="viewAnswers('${questionDoc.id}')">View Answers</button>
-                                <button class="ban" onclick="deleteQuestion('${questionDoc.id}')">Delete</button>
-                            </td>
-                        </tr>
-                    `;
-                    questionsTableBody.innerHTML += row;
-                }
+        const userData = userDoc.data();
+        currentUserRole = userData.role;
+        const roleName = currentUserRole === 'super_admin' ? 'Super Administrator' :
+                         currentUserRole === 'admin' ? 'Administrator' : userData.role;
+        $('#welcome-username').textContent = `${userData.username} (${roleName})`;
 
-            } catch (error) {
-                console.error('Error fetching Q&A:', error);
-                questionsTableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
-            }
-        };
-
-        const viewAnswers = async (questionId) => {
-            const modal = document.getElementById('infoModal');
-            const modalTitle = document.getElementById('modal-title');
-            const modalBody = document.getElementById('modal-body');
-
-            modalTitle.textContent = 'Answers';
-            modalBody.innerHTML = 'Loading...';
-            modal.style.display = 'flex';
-
-            try {
-                const answersSnapshot = await db.collection('answers').where('questionId', '==', questionId).get();
-                
-                modalTitle.textContent = `Answers for Question ID: ${questionId}`;
-                let contentHtml = '';
-
-                if (answersSnapshot.empty) {
-                    contentHtml = '<p>No answers found for this question.</p>';
-                } else {
-                    for (const doc of answersSnapshot.docs) {
-                        const answer = doc.data();
-                        const userDoc = await db.collection('users').doc(answer.userId).get();
-                        const username = userDoc.exists ? userDoc.data().username : 'Unknown User';
-
-                        contentHtml += `
-                            <div style="border-bottom: 1px solid #ccc; padding: 10px 0; margin-bottom: 10px;">
-                                <p><strong>Answer by:</strong> ${username}</p>
-                                <p><strong>Content:</strong> ${answer.content}</p>
-                                <p><strong>Best Answer:</strong> ${answer.isBestAnswer ? 'Yes' : 'No'}</p>
-                                <button class="ban" onclick="deleteAnswer('${doc.id}', '${questionId}')">Delete Answer</button>
-                            </div>
-                        `;
-                    }
-                }
-                modalBody.innerHTML = contentHtml;
-            } catch (error) {
-                console.error('Error fetching answers:', error);
-                modalTitle.textContent = 'Error';
-                modalBody.innerHTML = '<p>Failed to load answers. Please try again.</p>';
-            }
-        };
-
-        const deleteAnswer = (answerId, questionId) => {
-             if (confirm('Are you sure you want to delete this answer?')) {
-                alert('This action would trigger a secure Cloud Function to handle the deletion and associated data updates.');
-            }
-        };
-
-        const deleteQuestion = (questionId) => {
-            if (confirm('Are you sure you want to delete this question and all its answers? This action cannot be undone.')) {
-                alert('This action would trigger a secure Cloud Function to handle the cascade deletion.');
-            }
-        };
-
-        const fetchAndPopulateUsers = async () => {
-            const userTableBody = document.querySelector('#user-table tbody');
-            userTableBody.innerHTML = '<tr><td colspan="5">Loading users...</td></tr>';
-            try {
-                const usersSnapshot = await db.collection('users').get();
-                userTableBody.innerHTML = '';
-                if (usersSnapshot.empty) {
-                    userTableBody.innerHTML = '<tr><td colspan="5">No users found.</td></tr>';
-                    return;
-                }
-                usersSnapshot.forEach(doc => {
-                    const user = doc.data();
-                    const row = `
-                        <tr>
-                            <td>${doc.id}</td>
-                            <td>${user.username}</td>
-                            <td>${user.email}</td>
-                            <td>${user.role}</td>
-                            <td class="action-cell">
-                                <button class="action" onclick="editUserRole('${doc.id}', '${user.role}')">Edit Role</button>
-                                <button class="ban" onclick="deleteUser('${doc.id}', '${user.role}')">Delete</button>
-                                <button class="ban" onclick="banUser('${doc.id}')">Ban</button>
-                            </td>
-                        </tr>
-                    `;
-                    userTableBody.innerHTML += row;
-                });
-            } catch (error) {
-                console.error('Error fetching users:', error);
-                userTableBody.innerHTML = '<tr><td colspan="5">Error loading data.</td></tr>';
-            }
-        };
-
-        const editUserRole = async (userId, currentRole) => {
-            if (currentUserRole === 'admin' && currentRole === 'super_admin') {
-                alert('Admin cannot edit the role of a Super Admin.');
-                return;
-            }
-            
-            const newRole = prompt(`Current role: "${currentRole}". Enter new role (student, tutor, admin):`);
-            if (newRole && ['student', 'tutor', 'admin'].includes(newRole.toLowerCase())) {
-                try {
-                    await db.collection('users').doc(userId).update({ role: newRole.toLowerCase() });
-                    alert(`User ${userId} role updated to ${newRole.toLowerCase()}.`);
-                    fetchAndPopulateUsers();
-                } catch (error) {
-                    alert('Failed to update user role.');
-                    console.error('Error updating role:', error);
-                }
-            } else if (newRole !== null) {
-                alert('Invalid role entered. Please try again.');
-            }
-        };
-
-        const deleteUser = async (userId, userRole) => {
-            if (currentUserRole === 'admin' && userRole === 'super_admin') {
-                alert('Admin cannot delete a Super Admin.');
-                return;
-            }
-            if (confirm(`Are you sure you want to permanently delete user: ${userId}? This action cannot be undone.`)) {
-                alert('User deletion requires a backend Cloud Function to ensure data integrity and security. This action is not directly supported client-side.');
-            }
-        };
-
-        const banUser = async (userId) => {
-            if (confirm(`Are you sure you want to ban user: ${userId}?`)) {
-                try {
-                    await db.collection('users').doc(userId).update({ isBanned: true });
-                    alert(`User ${userId} has been banned.`);
-                    fetchAndPopulateUsers();
-                } catch (error) {
-                    alert('Failed to ban user.');
-                    console.error('Error banning user:', error);
-                }
-            }
-        };
-        
-        const fetchAndPopulateRanks = async () => {
-            const rankTableBody = document.querySelector('#rank-table tbody');
-            rankTableBody.innerHTML = '<tr><td colspan="4">Loading ranks...</td></tr>';
-            try {
-                const ranksSnapshot = await db.collection('ranks').get();
-                rankTableBody.innerHTML = '';
-                if (ranksSnapshot.empty) {
-                    rankTableBody.innerHTML = '<tr><td colspan="4">No ranks found.</td></tr>';
-                    return;
-                }
-                ranksSnapshot.forEach(doc => {
-                    const rank = doc.data();
-                    let criteriaText = 'N/A';
-                    let value = 0;
-                    
-                    if (rank.points) {
-                        criteriaText = 'Points';
-                        value = rank.points;
-                    } else if (rank.questions) {
-                        criteriaText = 'Questions';
-                        value = rank.questions;
-                    } else if (rank.answers) {
-                        criteriaText = 'Answers';
-                        value = rank.answers;
-                    } else if (rank.bestAnswers) {
-                        criteriaText = 'Best Answers';
-                        value = rank.bestAnswers;
-                    }
-
-                    const row = `
-                        <tr>
-                            <td>${rank.name}</td>
-                            <td>${criteriaText}</td>
-                            <td>${value}</td>
-                            <td class="action-cell">
-                                <button class="action" onclick="editRank('${doc.id}')">Edit</button>
-                                <button class="ban" onclick="deleteRank('${doc.id}')">Delete</button>
-                            </td>
-                        </tr>
-                    `;
-                    rankTableBody.innerHTML += row;
-                });
-            } catch (error) {
-                console.error('Error fetching ranks:', error);
-                rankTableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
-            }
-        };
-
-        const createRank = async () => {
-            const name = document.getElementById('rank-name-input').value.trim();
-            const metric = document.getElementById('rank-metric-select').value;
-            const value = parseInt(document.getElementById('rank-value-input').value, 10);
-
-            if (!name || isNaN(value) || value < 0) {
-                alert('Please enter a valid rank name and a non-negative number for the value.');
-                return;
-            }
-
-            const rankData = { name: name };
-            rankData[metric] = value;
-
-            try {
-                await db.collection('ranks').add(rankData);
-                alert('Rank added successfully!');
-                fetchAndPopulateRanks();
-                document.getElementById('rank-name-input').value = '';
-                document.getElementById('rank-value-input').value = '';
-            } catch (error) {
-                alert('Failed to add rank. Please check your Firestore rules and connection.');
-                console.error('Error adding rank:', error);
-            }
-        };
-
-        const editRank = async (rankId) => {
-            const rankDoc = await db.collection('ranks').doc(rankId).get();
-            if (!rankDoc.exists) {
-                alert('Rank not found.');
-                return;
-            }
-
-            const currentRank = rankDoc.data();
-            const currentMetricKey = Object.keys(currentRank).find(key => key !== 'name');
-            const currentMetricValue = currentRank[currentMetricKey];
-
-            const newName = prompt("Edit rank name:", currentRank.name);
-            if (!newName) return;
-
-            const metricMap = {
-                'points': 'points', 'questions': 'questions',
-                'answers': 'answers', 'bestAnswers': 'bestAnswers'
-            };
-            const newMetricText = prompt(`Current metric: "${currentMetricKey}". Enter new metric (points, questions, answers, bestAnswers):`, currentMetricKey);
-            const newMetric = metricMap[newMetricText.toLowerCase()];
-            if (!newMetric) {
-                alert('Invalid metric entered. Please use one of: points, questions, answers, bestAnswers');
-                return;
-            }
-
-            const newValue = parseInt(prompt(`Current value: "${currentMetricValue}". Enter new value:`, currentMetricValue), 10);
-            if (isNaN(newValue) || newValue < 0) {
-                alert('Invalid value entered. Please enter a non-negative number.');
-                return;
-            }
-            
-            const updatedData = { name: newName };
-            updatedData[newMetric] = newValue;
-            updatedData[currentMetricKey] = firebase.firestore.FieldValue.delete();
-
-            try {
-                await db.collection('ranks').doc(rankId).update(updatedData);
-                alert('Rank updated successfully!');
-                fetchAndPopulateRanks();
-            } catch (error) {
-                alert('Failed to edit rank.');
-                console.error('Error editing rank:', error);
-            }
-        };
-
-        const deleteRank = async (rankId) => {
-            if (confirm('Are you sure you want to delete this rank?')) {
-                try {
-                    await db.collection('ranks').doc(rankId).delete();
-                    alert('Rank deleted successfully!');
-                    fetchAndPopulateRanks();
-                } catch (error) {
-                    alert('Failed to delete rank.');
-                    console.error('Error deleting rank:', error);
-                }
-            }
-        };
-
-        document.querySelector('.close-btn').onclick = function() {
-            document.getElementById('infoModal').style.display = 'none';
+        if (currentUserRole === 'admin' || currentUserRole === 'super_admin') {
+          adminContent.style.display = 'flex';
+          showSection('dashboard');
+        } else {
+          alert('Access Denied. You do not have permission to view this page.');
+          window.location.href = 'index.html';
         }
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('infoModal')) {
-                document.getElementById('infoModal').style.display = 'none';
-            }
-        }
-    </script>
-</body>
-</html>
+      } catch (err) {
+        console.error('Authentication check failed:', err);
+        alert('An error occurred during authentication. Please try again.');
+        auth.signOut();
+      }
+    });
+
+    $('#logoutBtn').addEventListener('click', () => {
+      auth.signOut().then(() => { window.location.href = 'auth.html'; })
+        .catch(e => { console.error('Logout failed:', e); showToast('Logout failed', 'error'); });
+    });
+
+    // =================== Navigation ===================
+    $$('.nav-item').forEach((navItem) => {
+      navItem.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tab = e.currentTarget.dataset.tab;
+        showSection(tab);
+      });
+    });
+
+    function showSection(id) {
+      $$('.content-section').forEach(s => s.classList.remove('active'));
+      $(`#${id}`).classList.add('active');
+      $$('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelector(`.nav-item[data-tab="${id}"]`).classList.add('active');
+
+      switch (id) {
+        case 'dashboard': fetchDashboardStats(); break;
+        case 'qna': fetchAndPopulateQnA(); break;
+        case 'users': fetchAndPopulateUsers(); break;
+        case 'ranks': fetchAndPopulateRanks(); break;
+      }
+    }
+
+    // =================== Dashboard ===================
+    async function fetchDashboardStats() {
+      try {
+        const [usersSnapshot, questionsSnapshot, answersSnapshot] = await Promise.all([
+          db.collection('users').get(),
+          db.collection('questions').get(),
+          db.collection('answers').get()
+        ]);
+        $('#total-users').textContent = usersSnapshot.size;
+        $('#total-questions').textContent = questionsSnapshot.size;
+        $('#total-answers').textContent = answersSnapshot.size;
+      } catch (e) {
+        console.error('Error fetching dashboard stats:', e);
+        $('#total-users').textContent = '—';
+        $('#total-questions').textContent = '—';
+        $('#total-answers').textContent = '—';
+        showToast('Failed to load stats', 'error');
+      }
+    }
+
+    // =================== QnA ===================
+    $('#refreshQna').addEventListener('click', () => fetchAndPopulateQnA(true));
+    $('#qnaSearch').addEventListener('input', () => renderQnATable(QUESTIONS_CACHE));
+    $('#qnaLimit').addEventListener('change', () => fetchAndPopulateQnA(true));
+
+    async function fetchAndPopulateQnA(force=false) {
+      const tbody = $('#questions-table tbody');
+      renderLoadingRow(tbody, 4, 'Loading questions…');
+      try {
+        const limit = parseInt($('#qnaLimit').value, 10) || 50;
+        const qs = await db.collection('questions').orderBy('createdAt', 'desc').limit(limit).get();
+        const questions = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Batch fetch user docs to avoid N+1
+        const userIds = Array.from(new Set(questions.map(q => q.userId).filter(Boolean)));
+        const usersById = await batchFetchUsers(userIds);
+        QUESTIONS_CACHE = questions.map(q => ({ ...q, username: usersById[q.userId]?.username || 'Unknown User' }));
+
+        renderQnATable(QUESTIONS_CACHE);
+      } catch (e) {
+        console.error('Error fetching Q&A:', e);
+        renderMessageRow(tbody, 4, 'Error loading data.');
+        showToast('Failed to load questions', 'error');
+      }
+    }
+
+    function renderQnATable(data) {
+      const tbody = $('#questions-table tbody');
+      const search = ($('#qnaSearch').value || '').toLowerCase();
+      const filtered = data.filter(r =>
+        (r.title || '').toLowerCase().includes(search) ||
+        (r.username || '').toLowerCase().includes(search)
+      );
+
+      const { pageItems, page, totalPages, total } = paginate(filtered, QNA_STATE.page, QNA_STATE.perPage);
+      QNA_STATE.page = Math.min(QNA_STATE.page, totalPages);
+
+      if (!pageItems.length) { renderMessageRow(tbody, 4, 'No questions found.'); $('#qnaPager').innerHTML=''; return; }
+
+      tbody.innerHTML = pageItems.map(q => `
+        <tr data-question-id="${q.id}">
+          <td data-label="Question ID">${q.id}</td>
+          <td data-label="User">${escapeHTML(q.username)}</td>
+          <td data-label="Title">${escapeHTML(q.title || '')}</td>
+          <td data-label="Actions" class="action-cell">
+            <button class="action" onclick="viewAnswers('${q.id}')">View Answers</button>
+            <button class="ban" onclick="confirmDeleteQuestion('${q.id}')">Delete</button>
+          </td>
+        </tr>`).join('');
+
+      renderPager($('#qnaPager'), page, totalPages, (p)=>{ QNA_STATE.page = p; renderQnATable(QUESTIONS_CACHE); });
+    }
+
+    const QNA_STATE = { page: 1, perPage: 10 };
+
+    async function viewAnswers(questionId) {
+      openModal('Answers', '<div class="muted">Loading answers… <span class="loader"></span></div>');
+      try {
+        const as = await db.collection('answers').where('questionId', '==', questionId).get();
+        if (as.empty) { $('#modalTitle').textContent = `Answers for Question ID: ${questionId}`; $('#modalBody').innerHTML = '<p class="muted">No answers found for this question.</p>'; return; }
+
+        const answers = as.docs.map(d => ({ id: d.id, ...d.data() }));
+        const userIds = Array.from(new Set(answers.map(a => a.userId).filter(Boolean)));
+        const usersById = await batchFetchUsers(userIds);
+
+        $('#modalTitle').textContent = `Answers for Question ID: ${questionId}`;
+        $('#modalBody').innerHTML = answers.map(a => `
+          <div style="border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:10px;">
+            <p><strong>Answer by:</strong> ${escapeHTML(usersById[a.userId]?.username || 'Unknown User')}</p>
+            <p style="white-space:pre-wrap;"><strong>Content:</strong> ${escapeHTML(a.content || '')}</p>
+            <p><strong>Best Answer:</strong> ${a.isBestAnswer ? 'Yes' : 'No'}</p>
+            <div class="flex">
+              <button class="ban" onclick="confirmDeleteAnswer('${a.id}', '${questionId}')">Delete Answer</button>
+            </div>
+          </div>`).join('');
+      } catch (e) {
+        console.error('Error fetching answers:', e);
+        $('#modalTitle').textContent = 'Error';
+        $('#modalBody').innerHTML = '<p>Failed to load answers. Please try again.</p>';
+      }
+    }
+
+    function confirmDeleteAnswer(answerId, questionId) {
+      openModal('Delete Answer', `
+        <p>Are you sure you want to delete this answer?</p>
+        <div class="flex" style="justify-content:flex-end;">
+          <button class="ban" id="confirmDelAns">Delete</button>
+        </div>`);
+      $('#confirmDelAns').onclick = () => {
+        closeModal();
+        // NOTE: Replace with secure Cloud Function call
+        showToast('This action requires a secure Cloud Function.', 'warn');
+      };
+    }
+
+    function confirmDeleteQuestion(questionId) {
+      openModal('Delete Question', `
+        <p>Delete this question and all its answers? This cannot be undone.</p>
+        <div class="flex" style="justify-content:flex-end;">
+          <button class="ban" id="confirmDelQ">Delete</button>
+        </div>`);
+      $('#confirmDelQ').onclick = () => {
+        closeModal();
+        // NOTE: Replace with secure Cloud Function call
+        showToast('This action requires a secure Cloud Function.', 'warn');
+      };
+    }
+
+    // =================== Users ===================
+    $('#refreshUsers').addEventListener('click', () => fetchAndPopulateUsers(true));
+    $('#userSearch').addEventListener('input', () => renderUsersTable(USERS_CACHE));
+    $('#userRoleFilter').addEventListener('change', () => renderUsersTable(USERS_CACHE));
+
+    const USER_STATE = { page: 1, perPage: 10 };
+
+    async function fetchAndPopulateUsers(force=false) {
+      const tbody = $('#user-table tbody');
+      renderLoadingRow(tbody, 5, 'Loading users…');
+      try {
+        const us = await db.collection('users').get();
+        USERS_CACHE = us.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderUsersTable(USERS_CACHE);
+      } catch (e) {
+        console.error('Error fetching users:', e);
+        renderMessageRow(tbody, 5, 'Error loading data.');
+        showToast('Failed to load users', 'error');
+      }
+    }
+
+    function renderUsersTable(data) {
+      const tbody = $('#user-table tbody');
+      const q = ($('#userSearch').value || '').toLowerCase();
+      const role = $('#userRoleFilter').value;
+
+      const filtered = data.filter(u =>
+        (!role || (u.role || '') === role) &&
+        (((u.username || '').toLowerCase().includes(q)) || ((u.email || '').toLowerCase().includes(q)))
+      );
+
+      const { pageItems, page, totalPages } = paginate(filtered, USER_STATE.page, USER_STATE.perPage);
+      USER_STATE.page = Math.min(USER_STATE.page, totalPages);
+
+      if (!pageItems.length) { renderMessageRow(tbody, 5, 'No users found.'); $('#userPager').innerHTML=''; return; }
+
+      tbody.innerHTML = pageItems.map(u => `
+        <tr>
+          <td data-label="User ID">${u.id}</td>
+          <td data-label="Name">${escapeHTML(u.username || '')}</td>
+          <td data-label="Email">${escapeHTML(u.email || '')}</td>
+          <td data-label="Role">${escapeHTML(u.role || '')}</td>
+          <td data-label="Actions" class="action-cell">
+            <button class="action" onclick="openEditUserRole('${u.id}', '${u.role || ''}')">Edit Role</button>
+            <button class="ban" onclick="confirmDeleteUser('${u.id}', '${u.role || ''}')">Delete</button>
+            <button class="ban" onclick="banUser('${u.id}')">Ban</button>
+          </td>
+        </tr>`).join('');
+
+      renderPager($('#userPager'), page, totalPages, (p)=>{ USER_STATE.page = p; renderUsersTable(USERS_CACHE); });
+    }
+
+    function openEditUserRole(userId, currentRole) {
+      if (currentUserRole === 'admin' && currentRole === 'super_admin') {
+        showToast('Admin cannot edit Super Admin', 'warn');
+        return;
+      }
+      openModal('Edit User Role', `
+        <div class="form-grid">
+          <label>Role
+            <select id="editRoleSelect">
+              <option value="student">Student</option>
+              <option value="tutor">Tutor</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </label>
+          <div class="flex" style="justify-content:flex-end;">
+            <button class="action" id="saveRoleBtn">Save</button>
+          </div>
+        </div>`);
+      $('#editRoleSelect').value = currentRole || '';
+      $('#saveRoleBtn').onclick = async () => {
+        const newRole = $('#editRoleSelect').value;
+        if (currentUserRole === 'admin' && newRole === 'super_admin') { showToast('Admin cannot assign Super Admin', 'warn'); return; }
+        try {
+          await db.collection('users').doc(userId).update({ role: newRole });
+          showToast('Role updated');
+          closeModal();
+          fetchAndPopulateUsers();
+        } catch (e) { console.error(e); showToast('Failed to update role', 'error'); }
+      };
+    }
+
+    function confirmDeleteUser(userId, userRole) {
+      if (currentUserRole === 'admin' && userRole === 'super_admin') {
+        showToast('Admin cannot delete Super Admin', 'warn');
+        return;
+      }
+      openModal('Delete User', `
+        <p>Are you sure you want to permanently delete user: <strong>${userId}</strong>? This action cannot be undone.</p>
+        <p class="muted">For security and data integrity, this must be handled by a backend Cloud Function.</p>
+        <div class="flex" style="justify-content:flex-end;">
+          <button class="ban" id="confirmDelUser">Understood</button>
+        </div>`);
+      $('#confirmDelUser').onclick = () => {
+        closeModal();
+        showToast('Use a secure Cloud Function for deletion', 'warn');
+      };
+    }
+
+    async function banUser(userId) {
+      openModal('Ban User', `
+        <p>Ban user <strong>${userId}</strong>? They will be prevented from logging in / posting.</p>
+        <div class="flex" style="justify-content:flex-end;">
+          <button class="ban" id="confirmBanUser">Ban</button>
+        </div>`);
+      $('#confirmBanUser').onclick = async () => {
+        try {
+          await db.collection('users').doc(userId).update({ isBanned: true });
+          showToast(`User ${userId} banned`);
+          closeModal();
+          fetchAndPopulateUsers();
+        } catch (e) { showToast('Failed to ban user', 'error'); console.error(e); }
+      };
+    }
+
+    // =================== Ranks ===================
+    $('#createRankBtn').addEventListener('click', createRank);
+
+    async function fetchAndPopulateRanks() {
+      const tbody = $('#rank-table tbody');
+      renderLoadingRow(tbody, 4, 'Loading ranks…');
+      try {
+        const rs = await db.collection('ranks').get();
+        const rows = rs.docs.map(doc => {
+          const r = { id: doc.id, ...doc.data() };
+          const metricKey = ['points','questions','answers','bestAnswers'].find(k => r[k] !== undefined);
+          const criteria = metricKey ? labelForMetric(metricKey) : 'N/A';
+          const value = metricKey ? r[metricKey] : 0;
+          return { id: r.id, name: r.name, criteria, value, metricKey };
+        });
+        if (!rows.length) { renderMessageRow(tbody, 4, 'No ranks found.'); return; }
+        tbody.innerHTML = rows.map(r => `
+          <tr>
+            <td data-label="Rank Name">${escapeHTML(r.name || '')}</td>
+            <td data-label="Criteria">${escapeHTML(r.criteria)}</td>
+            <td data-label="Value">${r.value}</td>
+            <td data-label="Actions" class="action-cell">
+              <button class="action" onclick="openEditRank('${r.id}')">Edit</button>
+              <button class="ban" onclick="deleteRank('${r.id}')">Delete</button>
+            </td>
+          </tr>`).join('');
+      } catch (e) {
+        console.error('Error fetching ranks:', e);
+        renderMessageRow(tbody, 4, 'Error loading data.');
+      }
+    }
+
+    function labelForMetric(m) {
+      return m === 'points' ? 'Points' : m === 'questions' ? 'Questions' : m === 'answers' ? 'Answers' : 'Best Answers';
+    }
+
+    async function createRank() {
+      const name = $('#rank-name-input').value.trim();
+      const metric = $('#rank-metric-select').value;
+      const value = parseInt($('#rank-value-input').value, 10);
+      if (!name || isNaN(value) || value < 0) { showToast('Enter valid name and non-negative value', 'warn'); return; }
+
+      const payload = { name }; payload[metric] = value;
+      try {
+        await db.collection('ranks').add(payload);
+        showToast('Rank added');
+        $('#rank-name-input').value = '';
+        $('#rank-value-input').value = '';
+        fetchAndPopulateRanks();
+      } catch (e) { showToast('Failed to add rank', 'error'); console.error(e); }
+    }
+
+    async function openEditRank(rankId) {
+      try {
+        const doc = await db.collection('ranks').doc(rankId).get();
+        if (!doc.exists) { showToast('Rank not found', 'warn'); return; }
+        const r = doc.data();
+        const currentMetricKey = ['points','questions','answers','bestAnswers'].find(k => r[k] !== undefined) || 'points';
+        const currentValue = r[currentMetricKey] || 0;
+
+        openModal('Edit Rank', `
+          <div class="form-grid">
+            <label>Rank Name
+              <input id="rankEditName" type="text" value="${escapeAttr(r.name || '')}" />
+            </label>
+            <label>Metric
+              <select id="rankEditMetric">
+                <option value="points">Points</option>
+                <option value="questions">Questions Asked</option>
+                <option value="answers">Answers Given</option>
+                <option value="bestAnswers">Best Answers</option>
+              </select>
+            </label>
+            <label>Value
+              <input id="rankEditValue" type="number" min="0" value="${currentValue}" />
+            </label>
+            <div class="flex" style="justify-content:flex-end;">
+              <button class="action" id="saveRankBtn">Save</button>
+            </div>
+          </div>`);
+        $('#rankEditMetric').value = currentMetricKey;
+        $('#saveRankBtn').onclick = async () => {
+          const newName = $('#rankEditName').value.trim();
+          const newMetric = $('#rankEditMetric').value;
+          const newValue = parseInt($('#rankEditValue').value, 10);
+          if (!newName || isNaN(newValue) || newValue < 0) { showToast('Invalid inputs', 'warn'); return; }
+
+          const updated = { name: newName };
+          updated[newMetric] = newValue;
+          // remove previous metric key if changed
+          if (newMetric !== currentMetricKey) updated[currentMetricKey] = firebase.firestore.FieldValue.delete();
+
+          try {
+            await db.collection('ranks').doc(rankId).update(updated);
+            showToast('Rank updated');
+            closeModal();
+            fetchAndPopulateRanks();
+          } catch (e) { showToast('Failed to edit rank', 'error'); console.error(e); }
+        };
+      } catch (e) {
+        console.error(e);
+        showToast('Failed to open rank', 'error');
+      }
+    }
+
+    async function deleteRank(rankId) {
+      openModal('Delete Rank', `
+        <p>Delete this rank?</p>
+        <div class="flex" style="justify-content:flex-end;">
+          <button class="ban" id="confirmDelRank">Delete</button>
+        </div>`);
+      $('#confirmDelRank').onclick = async () => {
+        try {
+          await db.collection('ranks').doc(rankId).delete();
+          showToast('Rank deleted');
+          closeModal();
+          fetchAndPopulateRanks();
+        } catch (e) { showToast('Failed to delete rank', 'error'); console.error(e); }
+      };
+    }
+
+    // =================== Batch helpers ===================
+    async function batchFetchUsers(userIds) {
+      // Firestore `in` supports up to 10 values per query → chunk
+      const chunks = [];
+      for (let i = 0; i < userIds.length; i += 10) chunks.push(userIds.slice(i, i + 10));
+      const result = {};
+      for (const chunk of chunks) {
+        const snap = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', chunk).get();
+        snap.forEach(doc => { result[doc.id] = doc.data(); });
+      }
+      return result;
+    }
+
+    // =================== Escape helpers ===================
+    function escapeHTML(str) {
+      return String(str).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+    }
+    function escapeAttr(str) {
+      return String(str).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+    }
+
+    // =================== Global (for inline handlers) ===================
+    window.viewAnswers = viewAnswers;
+    window.confirmDeleteAnswer = confirmDeleteAnswer;
+    window.confirmDeleteQuestion = confirmDeleteQuestion;
+    window.openEditUserRole = openEditUserRole;
+    window.confirmDeleteUser = confirmDeleteUser;
+    window.banUser = banUser;
+    window.openEditRank = openEditRank;
+    window.deleteRank = deleteRank;
+  </script></body>
+                                                                 </html>
