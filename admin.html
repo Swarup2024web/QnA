@@ -44,18 +44,15 @@
             z-index: 100;
         }
 
-        .header-row {
+        .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            margin-bottom: 15px;
         }
         
-        .header-row.title-row {
-            margin-bottom: 10px;
-        }
-
-        .header-row h1 {
+        .header-top h1 {
             margin: 0;
             font-size: 1.8em;
             color: var(--primary-color);
@@ -94,6 +91,8 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
         }
         
         .nav-menu-container::-webkit-scrollbar {
@@ -104,8 +103,6 @@
             display: flex;
             justify-content: flex-start;
             gap: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-color);
         }
 
         .nav-item {
@@ -132,23 +129,22 @@
             font-size: 0.8em;
             font-weight: 500;
             margin-top: 4px;
+            white-space: nowrap;
         }
 
         @media (max-width: 768px) {
-            .header-row {
+            .header-top {
+                flex-direction: column;
                 justify-content: center;
-            }
-            .header-row h1 {
+                align-items: center;
                 text-align: center;
-                width: 100%;
+            }
+            .header-top h1 {
                 margin-bottom: 10px;
             }
             .user-info {
                 justify-content: center;
                 width: 100%;
-            }
-            .header-row.title-row {
-                flex-direction: column;
             }
         }
 
@@ -348,10 +344,8 @@
 <body>
     <div id="admin-content" style="display: none;">
         <header class="header">
-            <div class="header-row title-row">
+            <div class="header-top">
                 <h1>Admin Dashboard</h1>
-            </div>
-            <div class="header-row">
                 <div class="user-info">
                     <span id="welcome-username"></span>
                     <button class="logout-btn" onclick="handleLogout()">Log Out</button>
