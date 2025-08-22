@@ -38,75 +38,47 @@
             padding: 20px;
             text-align: center;
         }
-        .header h1 {
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header-row h1 {
             margin: 0;
             font-size: 1.8em;
             color: var(--primary-color);
         }
-        .header-meta {
+        .user-info {
             display: flex;
-            flex-direction: column;
             align-items: center;
             margin-top: 10px;
-        }
-        .header-meta .user-info {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
             color: var(--secondary-text-color);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .user-info span {
+            margin-right: 15px;
+            font-size: 1em;
+            font-weight: 500;
         }
         .logout-btn {
-            background-color: var(--primary-color);
+            background-color: var(--danger-color);
             color: white;
             border: none;
             padding: 8px 16px;
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.9em;
-            margin-left: 15px;
             transition: background-color 0.3s ease;
         }
         .logout-btn:hover {
-            background-color: #3876c1;
+            background-color: #d64949;
         }
-
         @media (min-width: 768px) {
-            .header-meta {
-                flex-direction: row;
-                justify-content: space-between;
+            .user-info {
+                margin-top: 0;
             }
-            .header-meta .user-info {
-                margin-bottom: 0;
-            }
-        }
-
-        .tabs-container {
-            background-color: var(--primary-color);
-            display: flex;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .tabs-container::-webkit-scrollbar {
-            display: none;
-        }
-        .tab-item {
-            flex-shrink: 0;
-            padding: 15px 25px;
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s, border-bottom-color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 3px solid transparent;
-        }
-        .tab-item:hover, .tab-item.active {
-            background-color: var(--accent-color);
-            border-bottom: 3px solid #fff;
         }
 
         .main-content {
@@ -125,6 +97,43 @@
         }
         .content-section.active {
             display: block;
+        }
+        
+        /* Navigation Bar (as tabs) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--card-background);
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+        .nav-item.active {
+            color: var(--primary-color);
+            transform: translateY(-5px);
+        }
+        .nav-item .material-symbols-outlined {
+            font-size: 24px;
+            margin-bottom: 4px;
+            font-variation-settings: 'FILL' 0; /* Unfilled */
+        }
+        .nav-item.active .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1; /* Filled */
+        }
+        .nav-item span {
+            font-size: 0.8em;
+            font-weight: 500;
         }
 
         h2 {
@@ -163,22 +172,24 @@
             color: var(--primary-color);
             margin: 0;
         }
+        
+        /* Skeleton Loading */
         .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
             border-radius: 4px;
             color: transparent;
-            display: inline-block;
-            min-width: 50px;
         }
         .skeleton.text {
             height: 1em;
             min-width: 100px;
+            display: inline-block;
         }
         .skeleton.p {
             height: 2.5em;
             min-width: 100px;
+            display: inline-block;
         }
         @keyframes loading {
             0% { background-position: 200% 0; }
@@ -280,53 +291,34 @@
 
     <div id="admin-content" style="display: none;">
         <header class="header">
-            <h1>Admin Panel</h1>
-            <div class="header-meta">
-                <div class="user-info">
-                    <span id="welcome-username">Welcome, Admin</span>
-                    <button class="logout-btn" onclick="handleLogout()">Log Out</button>
-                </div>
+            <div class="header-row">
+                <h1>Admin Dashboard</h1>
+            </div>
+            <div class="header-row user-info">
+                <span id="welcome-username"></span>
+                <button class="logout-btn" onclick="handleLogout()">Log Out</button>
             </div>
         </header>
-
-        <nav class="tabs-container">
-            <div class="tab-item active" data-tab="dashboard">
-                <span class="material-symbols-outlined">dashboard</span>
-                Dashboard
-            </div>
-            <div class="tab-item" data-tab="qna">
-                <span class="material-symbols-outlined">forum</span>
-                Manage Q&A
-            </div>
-            <div class="tab-item" data-tab="users">
-                <span class="material-symbols-outlined">group</span>
-                Manage Users
-            </div>
-            <div class="tab-item" data-tab="ranks">
-                <span class="material-symbols-outlined">military_tech</span>
-                Manage Ranks
-            </div>
-        </nav>
 
         <div class="main-content">
             <section id="dashboard" class="content-section active">
                 <h2>Dashboard</h2>
                 <div class="stats-grid">
-                    <div class="stat-card" id="card-users">
+                    <div class="stat-card">
                         <h3>Total Users</h3>
-                        <p id="total-users" class="skeleton"></p>
+                        <p id="total-users" class="skeleton-p"></p>
                     </div>
-                    <div class="stat-card" id="card-questions">
+                    <div class="stat-card">
                         <h3>Total Questions</h3>
-                        <p id="total-questions" class="skeleton"></p>
+                        <p id="total-questions" class="skeleton-p"></p>
                     </div>
-                    <div class="stat-card" id="card-answers">
+                    <div class="stat-card">
                         <h3>Total Answers</h3>
-                        <p id="total-answers" class="skeleton"></p>
+                        <p id="total-answers" class="skeleton-p"></p>
                     </div>
-                    <div class="stat-card" id="card-best-answers">
+                    <div class="stat-card">
                         <h3>Best Answers</h3>
-                        <p id="total-best-answers" class="skeleton"></p>
+                        <p id="total-best-answers" class="skeleton-p"></p>
                     </div>
                 </div>
             </section>
@@ -344,7 +336,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td colspan="4" class="skeleton">Loading questions...</td></tr>
+                            <tr><td colspan="4"><div class="skeleton text"></div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -364,7 +356,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td colspan="5" class="skeleton">Loading users...</td></tr>
+                            <tr><td colspan="5"><div class="skeleton text"></div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -385,7 +377,7 @@
                             <option value="points">Points</option>
                             <option value="questions">Questions Asked</option>
                             <option value="answers">Answers Given</option>
-                            <option value="bestAnswers">Best Answers</option>
+                            <option value="best_answers">Best Answers</option>
                         </select>
                         <input type="number" id="rank-value-input" placeholder="Value (e.g., 100)" min="0">
                     </div>
@@ -405,13 +397,32 @@
                             </tr>
                         </thead>
                         <tbody>
-                             <tr><td colspan="4" class="skeleton">Loading ranks...</td></tr>
+                             <tr><td colspan="4"><div class="skeleton text"></div></td></tr>
                         </tbody>
                     </table>
                 </div>
             </section>
         </div>
     </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" data-tab="dashboard">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item" data-tab="qna">
+            <span class="material-symbols-outlined">forum</span>
+            <span>Q&A</span>
+        </div>
+        <div class="nav-item" data-tab="users">
+            <span class="material-symbols-outlined">group</span>
+            <span>Users</span>
+        </div>
+        <div class="nav-item" data-tab="ranks">
+            <span class="material-symbols-outlined">military_tech</span>
+            <span>Ranks</span>
+        </div>
+    </nav>
 
     <div id="infoModal" class="modal">
         <div class="modal-content">
@@ -437,13 +448,12 @@
 
         let currentUserRole = null;
         let currentUserId = null;
-
-        // Use a flag to prevent re-initializing the dashboard on every auth state change
         let isDashboardInitialized = false;
 
         auth.onAuthStateChanged(async (user) => {
             if (isDashboardInitialized) return;
-
+            isDashboardInitialized = true;
+            
             const loadingScreen = document.getElementById('loading-screen');
             const adminContent = document.getElementById('admin-content');
             
@@ -452,12 +462,14 @@
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
-                        currentUserRole = userDoc.data().role;
-                        document.getElementById('welcome-username').textContent = `Welcome, ${userDoc.data().username}`;
+                        const userData = userDoc.data();
+                        currentUserRole = userData.role;
+                        
+                        document.getElementById('welcome-username').textContent = `Welcome, ${userData.username} (${userData.role})`;
+                        
                         if (currentUserRole === 'admin' || currentUserRole === 'super_admin') {
                             loadingScreen.style.display = 'none';
-                            adminContent.style.display = 'block';
-                            isDashboardInitialized = true;
+                            adminContent.style.display = 'flex';
                             showSection('dashboard');
                         } else {
                             alert('Access Denied. You do not have permission to view this page.');
@@ -478,10 +490,10 @@
             }
         });
         
-        document.querySelectorAll('.tab-item').forEach(tab => {
-            tab.addEventListener('click', (event) => {
-                const tabId = event.target.closest('.tab-item').dataset.tab;
-                showSection(tabId);
+        document.querySelectorAll('.nav-item').forEach(navItem => {
+            navItem.addEventListener('click', (event) => {
+                const navId = event.currentTarget.dataset.tab;
+                showSection(navId);
             });
         });
 
@@ -491,10 +503,10 @@
             });
             document.getElementById(id).classList.add('active');
 
-            document.querySelectorAll('.tab-item').forEach(item => {
+            document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.querySelector(`.tab-item[data-tab="${id}"]`).classList.add('active');
+            document.querySelector(`.nav-item[data-tab="${id}"]`).classList.add('active');
 
             switch(id) {
                 case 'dashboard':
@@ -522,7 +534,10 @@
         };
 
         const fetchDashboardStats = async () => {
-            document.querySelectorAll('.stat-card p').forEach(p => p.classList.add('skeleton'));
+            document.getElementById('total-users').classList.add('skeleton');
+            document.getElementById('total-questions').classList.add('skeleton');
+            document.getElementById('total-answers').classList.add('skeleton');
+            document.getElementById('total-best-answers').classList.add('skeleton');
 
             try {
                 const usersSnapshot = await db.collection('users').get();
@@ -555,7 +570,10 @@
                 console.error('Error fetching best answers:', error);
                 document.getElementById('total-best-answers').textContent = 'Error';
             } finally {
-                document.querySelectorAll('.stat-card p').forEach(p => p.classList.remove('skeleton'));
+                document.getElementById('total-users').classList.remove('skeleton');
+                document.getElementById('total-questions').classList.remove('skeleton');
+                document.getElementById('total-answers').classList.remove('skeleton');
+                document.getElementById('total-best-answers').classList.remove('skeleton');
             }
         };
 
@@ -788,87 +806,3 @@
             const rankData = {
                 name: name,
                 points: 0,
-                questions: 0,
-                answers: 0,
-                bestAnswers: 0,
-            };
-            rankData[metric] = value;
-
-            try {
-                await db.collection('ranks').add(rankData);
-                alert('Rank added successfully!');
-                fetchAndPopulateRanks();
-                document.getElementById('rank-name-input').value = '';
-                document.getElementById('rank-value-input').value = '';
-            } catch (error) {
-                alert('Failed to add rank. Please check your Firestore rules and connection.');
-                console.error('Error adding rank:', error);
-            }
-        };
-
-        const editRank = async (rankId, currentName, currentMetric, currentValue) => {
-            const newName = prompt("Edit rank name:", currentName);
-            if (!newName) return;
-
-            const metricMap = {
-                'points': 'points',
-                'questions': 'questions',
-                'answers': 'answers',
-                'bestanswers': 'bestAnswers'
-            };
-            const newMetricText = prompt(`Current metric: "${currentMetric}". Enter new metric (points, questions, answers, bestAnswers):`, currentMetric);
-            const newMetric = metricMap[newMetricText.toLowerCase()];
-            if (!newMetric) {
-                alert('Invalid metric entered. Please use one of: points, questions, answers, bestAnswers');
-                return;
-            }
-
-            const newValue = parseInt(prompt(`Current value: "${currentValue}". Enter new value:`, currentValue), 10);
-            if (isNaN(newValue) || newValue < 0) {
-                alert('Invalid value entered. Please enter a non-negative number.');
-                return;
-            }
-
-            const updatedData = {
-                name: newName,
-                points: 0,
-                questions: 0,
-                answers: 0,
-                bestAnswers: 0,
-            };
-            updatedData[newMetric] = newValue;
-
-            try {
-                await db.collection('ranks').doc(rankId).update(updatedData);
-                alert('Rank updated successfully!');
-                fetchAndPopulateRanks();
-            } catch (error) {
-                alert('Failed to edit rank.');
-                console.error('Error editing rank:', error);
-            }
-        };
-
-        const deleteRank = async (rankId) => {
-            if (confirm('Are you sure you want to delete this rank?')) {
-                try {
-                    await db.collection('ranks').doc(rankId).delete();
-                    alert('Rank deleted successfully!');
-                    fetchAndPopulateRanks();
-                } catch (error) {
-                    alert('Failed to delete rank.');
-                    console.error('Error deleting rank:', error);
-                }
-            }
-        };
-
-        document.querySelector('.close-btn').onclick = function() {
-            document.getElementById('infoModal').style.display = 'none';
-        }
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('infoModal')) {
-                document.getElementById('infoModal').style.display = 'none';
-            }
-        }
-    </script>
-</body>
-</html>
