@@ -163,10 +163,22 @@
             color: var(--primary-color);
             margin: 0;
         }
-        .stat-card.loading {
+        .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
+            border-radius: 4px;
+            color: transparent;
+            display: inline-block;
+            min-width: 50px;
+        }
+        .skeleton.text {
+            height: 1em;
+            min-width: 100px;
+        }
+        .skeleton.p {
+            height: 2.5em;
+            min-width: 100px;
         }
         @keyframes loading {
             0% { background-position: 200% 0; }
@@ -332,6 +344,7 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr><td colspan="4" class="skeleton">Loading questions...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -351,6 +364,7 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr><td colspan="5" class="skeleton">Loading users...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -391,6 +405,7 @@
                             </tr>
                         </thead>
                         <tbody>
+                             <tr><td colspan="4" class="skeleton">Loading ranks...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -505,43 +520,52 @@
                 alert("An error occurred during logout.");
             });
         };
-        
+
         const fetchDashboardStats = async () => {
-            // Add skeleton loading classes
             document.querySelectorAll('.stat-card p').forEach(p => p.classList.add('skeleton'));
 
             try {
-                const [usersSnapshot, questionsSnapshot, answersSnapshot, bestAnswersSnapshot] = await Promise.all([
-                    db.collection('users').get(),
-                    db.collection('questions').get(),
-                    db.collection('answers').get(),
-                    db.collection('answers').where('isBestAnswer', '==', true).get()
-                ]);
-
+                const usersSnapshot = await db.collection('users').get();
                 document.getElementById('total-users').textContent = usersSnapshot.size;
-                document.getElementById('total-questions').textContent = questionsSnapshot.size;
-                document.getElementById('total-answers').textContent = answersSnapshot.size;
-                document.getElementById('total-best-answers').textContent = bestAnswersSnapshot.size;
-
             } catch (error) {
-                console.error('Error fetching dashboard stats:', error);
+                console.error('Error fetching users:', error);
                 document.getElementById('total-users').textContent = 'Error';
+            }
+
+            try {
+                const questionsSnapshot = await db.collection('questions').get();
+                document.getElementById('total-questions').textContent = questionsSnapshot.size;
+            } catch (error) {
+                console.error('Error fetching questions:', error);
                 document.getElementById('total-questions').textContent = 'Error';
+            }
+
+            try {
+                const answersSnapshot = await db.collection('answers').get();
+                document.getElementById('total-answers').textContent = answersSnapshot.size;
+            } catch (error) {
+                console.error('Error fetching answers:', error);
                 document.getElementById('total-answers').textContent = 'Error';
+            }
+
+            try {
+                const bestAnswersSnapshot = await db.collection('answers').where('isBestAnswer', '==', true).get();
+                document.getElementById('total-best-answers').textContent = bestAnswersSnapshot.size;
+            } catch (error) {
+                console.error('Error fetching best answers:', error);
                 document.getElementById('total-best-answers').textContent = 'Error';
             } finally {
-                // Remove skeleton loading classes after fetch
                 document.querySelectorAll('.stat-card p').forEach(p => p.classList.remove('skeleton'));
             }
         };
 
         const fetchAndPopulateQnA = async () => {
             const questionsTableBody = document.querySelector('#questions-table tbody');
-            questionsTableBody.innerHTML = '<tr><td colspan="4" class="skeleton">Loading questions...</td></tr>';
+            questionsTableBody.innerHTML = '<tr><td colspan="4"><div class="skeleton text"></div></td></tr>';
             
             try {
                 const questionsSnapshot = await db.collection('questions').orderBy('createdAt', 'desc').get();
-                questionsTableBody.innerHTML = ''; // Clear skeleton loader
+                questionsTableBody.innerHTML = '';
 
                 if (questionsSnapshot.empty) {
                     questionsTableBody.innerHTML = '<tr><td colspan="4">No questions found.</td></tr>';
@@ -617,24 +641,22 @@
 
         const deleteAnswer = (answerId, questionId) => {
             if (confirm('Are you sure you want to delete this answer?')) {
-                // This action should be handled by a secure Cloud Function.
                 alert('This action requires a secure Cloud Function to ensure data integrity.');
             }
         };
 
         const deleteQuestion = (questionId) => {
             if (confirm('Are you sure you want to delete this question and all its answers? This action cannot be undone.')) {
-                // This action should be handled by a secure Cloud Function.
                 alert('This action requires a secure Cloud Function to ensure data integrity.');
             }
         };
 
         const fetchAndPopulateUsers = async () => {
             const userTableBody = document.querySelector('#user-table tbody');
-            userTableBody.innerHTML = '<tr><td colspan="5" class="skeleton">Loading users...</td></tr>';
+            userTableBody.innerHTML = '<tr><td colspan="5"><div class="skeleton text"></div></td></tr>';
             try {
                 const usersSnapshot = await db.collection('users').get();
-                userTableBody.innerHTML = ''; // Clear skeleton loader
+                userTableBody.innerHTML = '';
                 if (usersSnapshot.empty) {
                     userTableBody.innerHTML = '<tr><td colspan="5">No users found.</td></tr>';
                     return;
@@ -707,10 +729,10 @@
         
         const fetchAndPopulateRanks = async () => {
             const rankTableBody = document.querySelector('#rank-table tbody');
-            rankTableBody.innerHTML = '<tr><td colspan="4" class="skeleton">Loading ranks...</td></tr>';
+            rankTableBody.innerHTML = '<tr><td colspan="4"><div class="skeleton text"></div></td></tr>';
             try {
                 const ranksSnapshot = await db.collection('ranks').get();
-                rankTableBody.innerHTML = ''; // Clear skeleton loader
+                rankTableBody.innerHTML = '';
                 if (ranksSnapshot.empty) {
                     rankTableBody.innerHTML = '<tr><td colspan="4">No ranks found.</td></tr>';
                     return;
@@ -839,7 +861,6 @@
             }
         };
 
-        // Modal Functionality
         document.querySelector('.close-btn').onclick = function() {
             document.getElementById('infoModal').style.display = 'none';
         }
