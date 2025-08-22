@@ -11,12 +11,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --primary-color: #34495e;
-            --accent-color: #2980b9;
-            --background-color: #f4f7f9;
-            --text-color: #333;
+            --primary-color: #4a90e2; /* A modern blue */
+            --accent-color: #50e3c2; /* A vibrant green-blue for accents */
+            --background-color: #f0f2f5; /* Light gray background */
             --card-background: #fff;
-            --border-color: #ddd;
+            --text-color: #333;
+            --secondary-text-color: #7f8c8d;
+            --border-color: #e0e6ed;
+            --danger-color: #ff6b6b; /* Red for danger actions */
+            --success-color: #27ae60; /* Green for success */
         }
 
         body {
@@ -24,11 +27,14 @@
             margin: 0;
             background-color: var(--background-color);
             color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         .header {
             background-color: var(--card-background);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             padding: 20px;
             text-align: center;
         }
@@ -47,22 +53,23 @@
             display: flex;
             align-items: center;
             margin-bottom: 10px;
-        }
-        .header-meta span {
-            font-size: 1em;
-            color: #7f8c8d;
+            color: var(--secondary-text-color);
         }
         .logout-btn {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
+            padding: 8px 16px;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 0.9em;
-            margin-left: 10px;
+            margin-left: 15px;
+            transition: background-color 0.3s ease;
         }
-        
+        .logout-btn:hover {
+            background-color: #3876c1;
+        }
+
         @media (min-width: 768px) {
             .header-meta {
                 flex-direction: row;
@@ -80,6 +87,7 @@
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
             -ms-overflow-style: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         .tabs-container::-webkit-scrollbar {
             display: none;
@@ -90,7 +98,7 @@
             color: white;
             font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, border-bottom-color 0.3s;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -98,19 +106,14 @@
         }
         .tab-item:hover, .tab-item.active {
             background-color: var(--accent-color);
-            border-bottom: 3px solid #27ae60;
-        }
-        .tab-item.active {
-            background-color: var(--accent-color);
-        }
-        .tab-item span.material-symbols-outlined {
-            font-size: 1.2em;
+            border-bottom: 3px solid #fff;
         }
 
         .main-content {
             max-width: 1200px;
             margin: 20px auto;
             padding: 0 20px;
+            flex-grow: 1;
         }
 
         .content-section {
@@ -118,23 +121,18 @@
             background-color: var(--card-background);
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         .content-section.active {
             display: block;
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
         }
 
         h2 {
             font-size: 1.5em;
             color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
         
         /* Stats Grid */
@@ -148,17 +146,31 @@
             padding: 20px;
             border-radius: 8px;
             text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .stat-card h3 {
             margin: 0 0 10px;
             font-size: 1.2em;
-            color: #555;
+            color: var(--secondary-text-color);
         }
         .stat-card p {
-            font-size: 2em;
+            font-size: 2.5em;
             font-weight: bold;
-            color: var(--accent-color);
+            color: var(--primary-color);
             margin: 0;
+        }
+        .stat-card.loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         /* Tables */
@@ -178,106 +190,35 @@
             border-bottom: 1px solid var(--border-color);
         }
         th {
-            background-color: #f2f2f2;
-            font-weight: bold;
+            background-color: #f8f8f8;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            color: var(--secondary-text-color);
         }
         tr:hover {
-            background-color: #f9f9f9;
+            background-color: #fafafa;
         }
         
         /* Buttons */
         button {
-            padding: 8px 12px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 0.9em;
             margin-right: 5px;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.2s;
+            font-weight: 500;
         }
-        button.action { background-color: var(--accent-color); color: white; }
-        button.ban { background-color: #e74c3c; color: white; }
-        button.add { background-color: #27ae60; color: white; }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button.action { background-color: var(--primary-color); color: white; }
+        button.ban { background-color: var(--danger-color); color: white; }
+        button.add { background-color: var(--success-color); color: white; }
         .action-cell {
             white-space: nowrap;
-        }
-        
-        /* Rank Form */
-        #rank-form-container {
-            background-color: var(--background-color);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .form-row label {
-            font-weight: bold;
-        }
-        .form-row input, .form-row select {
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-        }
-        @media (min-width: 600px) {
-            .form-row {
-                flex-direction: row;
-                align-items: center;
-                gap: 15px;
-            }
-            .form-row label {
-                min-width: 120px;
-            }
-        }
-        .form-row button {
-            width: 100%;
-            margin-top: 5px;
-        }
-        .form-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .form-actions button {
-            flex-grow: 1;
-        }
-
-        /* Loader and message screen styles */
-        .loading-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--background-color);
-            z-index: 1001;
-            text-align: center;
-        }
-        .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--accent-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loading-text {
-            margin-top: 20px;
-            font-size: 1.2em;
-            color: var(--text-color);
         }
 
         /* Modal Styles */
@@ -295,25 +236,26 @@
         }
         .modal-content {
             background-color: var(--card-background);
-            padding: 20px;
-            border-radius: 8px;
+            padding: 25px;
+            border-radius: 12px;
             width: 90%;
             max-width: 600px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
             position: relative;
             max-height: 80vh;
             overflow-y: auto;
         }
         .close-btn {
-            color: #aaa;
+            color: var(--secondary-text-color);
             float: right;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
             cursor: pointer;
+            transition: color 0.3s;
         }
         .close-btn:hover,
         .close-btn:focus {
-            color: #333;
+            color: var(--primary-color);
             text-decoration: none;
         }
     </style>
@@ -321,7 +263,7 @@
 <body>
     <div id="loading-screen" class="loading-screen">
         <div class="spinner"></div>
-        <div class="loading-text">Checking user credentials...</div>
+        <div class="loading-text">Loading...</div>
     </div>
 
     <div id="admin-content" style="display: none;">
@@ -358,29 +300,27 @@
             <section id="dashboard" class="content-section active">
                 <h2>Dashboard</h2>
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card" id="card-users">
                         <h3>Total Users</h3>
-                        <p id="total-users">0</p>
+                        <p id="total-users" class="skeleton"></p>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" id="card-questions">
                         <h3>Total Questions</h3>
-                        <p id="total-questions">0</p>
+                        <p id="total-questions" class="skeleton"></p>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" id="card-answers">
                         <h3>Total Answers</h3>
-                        <p id="total-answers">0</p>
+                        <p id="total-answers" class="skeleton"></p>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" id="card-best-answers">
                         <h3>Best Answers</h3>
-                        <p id="total-best-answers">0</p>
+                        <p id="total-best-answers" class="skeleton"></p>
                     </div>
                 </div>
             </section>
             
             <section id="qna" class="content-section">
-                <div class="section-header">
-                    <h2>Manage Questions & Answers</h2>
-                </div>
+                <h2>Manage Questions & Answers</h2>
                 <div class="table-container">
                     <table id="questions-table">
                         <thead>
@@ -398,9 +338,7 @@
             </section>
             
             <section id="users" class="content-section">
-                <div class="section-header">
-                    <h2>Manage Users</h2>
-                </div>
+                <h2>Manage Users</h2>
                 <div class="table-container">
                     <table id="user-table">
                         <thead>
@@ -419,9 +357,7 @@
             </section>
             
             <section id="ranks" class="content-section">
-                <div class="section-header">
-                    <h2>Manage Ranks</h2>
-                </div>
+                <h2>Manage Ranks</h2>
                 
                 <div id="rank-form-container">
                     <h3>Create New Rank</h3>
@@ -487,7 +423,12 @@
         let currentUserRole = null;
         let currentUserId = null;
 
+        // Use a flag to prevent re-initializing the dashboard on every auth state change
+        let isDashboardInitialized = false;
+
         auth.onAuthStateChanged(async (user) => {
+            if (isDashboardInitialized) return;
+
             const loadingScreen = document.getElementById('loading-screen');
             const adminContent = document.getElementById('admin-content');
             
@@ -501,6 +442,7 @@
                         if (currentUserRole === 'admin' || currentUserRole === 'super_admin') {
                             loadingScreen.style.display = 'none';
                             adminContent.style.display = 'block';
+                            isDashboardInitialized = true;
                             showSection('dashboard');
                         } else {
                             alert('Access Denied. You do not have permission to view this page.');
@@ -563,8 +505,11 @@
                 alert("An error occurred during logout.");
             });
         };
-
+        
         const fetchDashboardStats = async () => {
+            // Add skeleton loading classes
+            document.querySelectorAll('.stat-card p').forEach(p => p.classList.add('skeleton'));
+
             try {
                 const [usersSnapshot, questionsSnapshot, answersSnapshot, bestAnswersSnapshot] = await Promise.all([
                     db.collection('users').get(),
@@ -577,17 +522,26 @@
                 document.getElementById('total-questions').textContent = questionsSnapshot.size;
                 document.getElementById('total-answers').textContent = answersSnapshot.size;
                 document.getElementById('total-best-answers').textContent = bestAnswersSnapshot.size;
+
             } catch (error) {
                 console.error('Error fetching dashboard stats:', error);
+                document.getElementById('total-users').textContent = 'Error';
+                document.getElementById('total-questions').textContent = 'Error';
+                document.getElementById('total-answers').textContent = 'Error';
+                document.getElementById('total-best-answers').textContent = 'Error';
+            } finally {
+                // Remove skeleton loading classes after fetch
+                document.querySelectorAll('.stat-card p').forEach(p => p.classList.remove('skeleton'));
             }
         };
 
         const fetchAndPopulateQnA = async () => {
             const questionsTableBody = document.querySelector('#questions-table tbody');
-            questionsTableBody.innerHTML = '';
+            questionsTableBody.innerHTML = '<tr><td colspan="4" class="skeleton">Loading questions...</td></tr>';
             
             try {
                 const questionsSnapshot = await db.collection('questions').orderBy('createdAt', 'desc').get();
+                questionsTableBody.innerHTML = ''; // Clear skeleton loader
 
                 if (questionsSnapshot.empty) {
                     questionsTableBody.innerHTML = '<tr><td colspan="4">No questions found.</td></tr>';
@@ -677,9 +631,14 @@
 
         const fetchAndPopulateUsers = async () => {
             const userTableBody = document.querySelector('#user-table tbody');
-            userTableBody.innerHTML = '';
+            userTableBody.innerHTML = '<tr><td colspan="5" class="skeleton">Loading users...</td></tr>';
             try {
                 const usersSnapshot = await db.collection('users').get();
+                userTableBody.innerHTML = ''; // Clear skeleton loader
+                if (usersSnapshot.empty) {
+                    userTableBody.innerHTML = '<tr><td colspan="5">No users found.</td></tr>';
+                    return;
+                }
                 usersSnapshot.forEach(doc => {
                     const user = doc.data();
                     const row = `
@@ -699,6 +658,7 @@
                 });
             } catch (error) {
                 console.error('Error fetching users:', error);
+                userTableBody.innerHTML = '<tr><td colspan="5">Error loading data.</td></tr>';
             }
         };
 
@@ -747,9 +707,14 @@
         
         const fetchAndPopulateRanks = async () => {
             const rankTableBody = document.querySelector('#rank-table tbody');
-            rankTableBody.innerHTML = '';
+            rankTableBody.innerHTML = '<tr><td colspan="4" class="skeleton">Loading ranks...</td></tr>';
             try {
                 const ranksSnapshot = await db.collection('ranks').get();
+                rankTableBody.innerHTML = ''; // Clear skeleton loader
+                if (ranksSnapshot.empty) {
+                    rankTableBody.innerHTML = '<tr><td colspan="4">No ranks found.</td></tr>';
+                    return;
+                }
                 ranksSnapshot.forEach(doc => {
                     const rank = doc.data();
                     let criteriaText = '';
@@ -784,6 +749,7 @@
                 });
             } catch (error) {
                 console.error('Error fetching ranks:', error);
+                rankTableBody.innerHTML = '<tr><td colspan="4">Error loading data.</td></tr>';
             }
         };
 
