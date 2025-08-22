@@ -11,15 +11,16 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --primary-color: #4a90e2; /* A modern blue */
-            --accent-color: #50e3c2; /* A vibrant green-blue for accents */
-            --background-color: #f0f2f5; /* Light gray background */
+            --primary-color: #4a90e2;
+            --accent-color: #50e3c2;
+            --background-color: #f0f2f5;
             --card-background: #fff;
             --text-color: #333;
             --secondary-text-color: #7f8c8d;
             --border-color: #e0e6ed;
-            --danger-color: #ff6b6b; /* Red for danger actions */
-            --success-color: #27ae60; /* Green for success */
+            --danger-color: #ff6b6b;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
         }
 
         body {
@@ -27,41 +28,79 @@
             margin: 0;
             background-color: var(--background-color);
             color: var(--text-color);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            overflow-x: hidden;
         }
-
+        
+        /* New Header Navigation */
         .header {
             background-color: var(--card-background);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            padding: 20px;
-            text-align: center;
-        }
-        .header-row {
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .header-row h1 {
-            margin: 0;
+        
+        .header .logo {
             font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .header .nav-menu {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .header .nav-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            transition: color 0.3s ease;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .header .nav-item.active {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 5px;
+        }
+        
+        .header .nav-item:hover {
             color: var(--primary-color);
         }
+
+        .header .nav-item .material-symbols-outlined {
+            font-size: 20px;
+            margin-right: 5px;
+        }
+
         .user-info {
             display: flex;
             align-items: center;
-            margin-top: 10px;
-            color: var(--secondary-text-color);
-            flex-wrap: wrap;
-            justify-content: center;
+            gap: 15px;
+            flex-shrink: 0;
         }
+
         .user-info span {
-            margin-right: 15px;
-            font-size: 1em;
+            color: var(--secondary-text-color);
             font-weight: 500;
+            white-space: nowrap;
         }
+
         .logout-btn {
             background-color: var(--danger-color);
             color: white;
@@ -71,20 +110,36 @@
             cursor: pointer;
             font-size: 0.9em;
             transition: background-color 0.3s ease;
+            font-weight: 500;
         }
         .logout-btn:hover {
             background-color: #d64949;
         }
-        @media (min-width: 768px) {
-            .user-info {
-                margin-top: 0;
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .header .nav-menu {
+                justify-content: space-around;
+                width: 100%;
+                gap: 0;
+            }
+            .header .nav-item span {
+                display: none;
+            }
+            .header .nav-item .material-symbols-outlined {
+                margin: 0;
             }
         }
 
         .main-content {
             max-width: 1200px;
+            width: 100%;
             margin: 20px auto;
             padding: 0 20px;
+            box-sizing: border-box;
             flex-grow: 1;
         }
 
@@ -94,48 +149,10 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            position: relative; /* For spinner positioning */
-            min-height: 300px;
+            min-height: 500px;
         }
         .content-section.active {
             display: block;
-        }
-        
-        /* Navigation Bar (as tabs) */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: var(--card-background);
-            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-        }
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            color: var(--secondary-text-color);
-            transition: color 0.3s ease, transform 0.3s ease;
-        }
-        .nav-item.active {
-            color: var(--primary-color);
-            transform: translateY(-5px);
-        }
-        .nav-item .material-symbols-outlined {
-            font-size: 24px;
-            margin-bottom: 4px;
-            font-variation-settings: 'FILL' 0; /* Unfilled */
-        }
-        .nav-item.active .material-symbols-outlined {
-            font-variation-settings: 'FILL' 1; /* Filled */
-        }
-        .nav-item span {
-            font-size: 0.8em;
-            font-weight: 500;
         }
 
         h2 {
@@ -260,15 +277,85 @@
             color: var(--primary-color);
             text-decoration: none;
         }
+        
+        /* Rank Form Styles */
+        #rank-form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: var(--background-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        #rank-form-container h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .form-row label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        .form-row input, .form-row select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .form-actions {
+            margin-top: 10px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .form-row label {
+                margin-bottom: 5px;
+            }
+            .form-row input, .form-row select {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="admin-content" style="display: none;">
         <header class="header">
-            <div class="header-row">
-                <h1>Admin Dashboard</h1>
-            </div>
-            <div class="header-row user-info">
+            <h1 class="logo">Admin</h1>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-tab="dashboard">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="qna">
+                    <span class="material-symbols-outlined">forum</span>
+                    <span>Q&A</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="users">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>Users</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="ranks">
+                    <span class="material-symbols-outlined">military_tech</span>
+                    <span>Ranks</span>
+                </a>
+            </nav>
+            <div class="user-info">
                 <span id="welcome-username"></span>
                 <button class="logout-btn" onclick="handleLogout()">Log Out</button>
             </div>
@@ -280,15 +367,15 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <h3>Total Users</h3>
-                        <p id="total-users"></p>
+                        <p id="total-users">Loading...</p>
                     </div>
                     <div class="stat-card">
                         <h3>Total Questions</h3>
-                        <p id="total-questions"></p>
+                        <p id="total-questions">Loading...</p>
                     </div>
                     <div class="stat-card">
                         <h3>Total Answers</h3>
-                        <p id="total-answers"></p>
+                        <p id="total-answers">Loading...</p>
                     </div>
                 </div>
             </section>
@@ -343,7 +430,7 @@
                             <option value="points">Points</option>
                             <option value="questions">Questions Asked</option>
                             <option value="answers">Answers Given</option>
-                            <option value="best_answers">Best Answers</option>
+                            <option value="bestAnswers">Best Answers</option>
                         </select>
                         <input type="number" id="rank-value-input" placeholder="Value (e.g., 100)" min="0">
                     </div>
@@ -369,25 +456,6 @@
         </div>
     </div>
 
-    <nav class="bottom-nav">
-        <div class="nav-item active" data-tab="dashboard">
-            <span class="material-symbols-outlined">dashboard</span>
-            <span>Dashboard</span>
-        </div>
-        <div class="nav-item" data-tab="qna">
-            <span class="material-symbols-outlined">forum</span>
-            <span>Q&A</span>
-        </div>
-        <div class="nav-item" data-tab="users">
-            <span class="material-symbols-outlined">group</span>
-            <span>Users</span>
-        </div>
-        <div class="nav-item" data-tab="ranks">
-            <span class="material-symbols-outlined">military_tech</span>
-            <span>Ranks</span>
-        </div>
-    </nav>
-
     <div id="infoModal" class="modal">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -412,6 +480,10 @@
 
         let currentUserRole = null;
         let currentUserId = null;
+        
+        // This is a flag to prevent multiple initializations.
+        // It's a good practice, but not strictly necessary here since onAuthStateChanged
+        // is designed to only fire once for the initial state.
         let isDashboardInitialized = false;
 
         auth.onAuthStateChanged(async (user) => {
@@ -458,6 +530,7 @@
         
         document.querySelectorAll('.nav-item').forEach(navItem => {
             navItem.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default anchor behavior
                 const navId = event.currentTarget.dataset.tab;
                 showSection(navId);
             });
@@ -521,7 +594,7 @@
 
         const fetchAndPopulateQnA = async () => {
             const questionsTableBody = document.querySelector('#questions-table tbody');
-            questionsTableBody.innerHTML = '';
+            questionsTableBody.innerHTML = '<tr><td colspan="4">Loading questions...</td></tr>';
             
             try {
                 const questionsSnapshot = await db.collection('questions').orderBy('createdAt', 'desc').get();
@@ -600,20 +673,24 @@
         };
 
         const deleteAnswer = (answerId, questionId) => {
-            if (confirm('Are you sure you want to delete this answer?')) {
-                alert('This action requires a secure Cloud Function to ensure data integrity.');
+             if (confirm('Are you sure you want to delete this answer?')) {
+                // In a real application, you would call a Cloud Function here to ensure
+                // that all related data (e.g., user points) is correctly handled.
+                // For this example, we'll provide a message to the user.
+                alert('This action would trigger a secure Cloud Function to handle the deletion and associated data updates.');
             }
         };
 
         const deleteQuestion = (questionId) => {
             if (confirm('Are you sure you want to delete this question and all its answers? This action cannot be undone.')) {
-                alert('This action requires a secure Cloud Function to ensure data integrity.');
+                // In a real application, a Cloud Function would handle the cascade deletion.
+                alert('This action would trigger a secure Cloud Function to handle the cascade deletion.');
             }
         };
 
         const fetchAndPopulateUsers = async () => {
             const userTableBody = document.querySelector('#user-table tbody');
-            userTableBody.innerHTML = '';
+            userTableBody.innerHTML = '<tr><td colspan="5">Loading users...</td></tr>';
             try {
                 const usersSnapshot = await db.collection('users').get();
                 userTableBody.innerHTML = '';
@@ -649,6 +726,8 @@
                 alert('Admin cannot edit the role of a Super Admin.');
                 return;
             }
+            
+            // Use a simple prompt for demonstration, but a modal would be better
             const newRole = prompt(`Current role: "${currentRole}". Enter new role (student, tutor, admin):`);
             if (newRole && ['student', 'tutor', 'admin'].includes(newRole.toLowerCase())) {
                 try {
@@ -670,7 +749,10 @@
                 return;
             }
             if (confirm(`Are you sure you want to permanently delete user: ${userId}? This action cannot be undone.`)) {
-                alert('User deletion requires a backend Cloud Function. This action is not directly supported client-side.');
+                // In a real application, this would trigger a Cloud Function to handle
+                // all associated data deletion (questions, answers, points, etc.) and
+                // then delete the user account from Firebase Authentication.
+                alert('User deletion requires a backend Cloud Function to ensure data integrity and security. This action is not directly supported client-side.');
             }
         };
 
@@ -689,7 +771,7 @@
         
         const fetchAndPopulateRanks = async () => {
             const rankTableBody = document.querySelector('#rank-table tbody');
-            rankTableBody.innerHTML = '';
+            rankTableBody.innerHTML = '<tr><td colspan="4">Loading ranks...</td></tr>';
             try {
                 const ranksSnapshot = await db.collection('ranks').get();
                 rankTableBody.innerHTML = '';
@@ -699,7 +781,7 @@
                 }
                 ranksSnapshot.forEach(doc => {
                     const rank = doc.data();
-                    let criteriaText = '';
+                    let criteriaText = 'N/A';
                     let value = 0;
                     
                     if (rank.points) {
@@ -722,7 +804,7 @@
                             <td>${criteriaText}</td>
                             <td>${value}</td>
                             <td class="action-cell">
-                                <button class="action" onclick="editRank('${doc.id}', '${rank.name}', '${criteriaText.replace(/\s/g, '')}', ${value})">Edit</button>
+                                <button class="action" onclick="editRank('${doc.id}')">Edit</button>
                                 <button class="ban" onclick="deleteRank('${doc.id}')">Delete</button>
                             </td>
                         </tr>
@@ -745,13 +827,7 @@
                 return;
             }
 
-            const rankData = {
-                name: name,
-                points: 0,
-                questions: 0,
-                answers: 0,
-                bestAnswers: 0,
-            };
+            const rankData = { name: name };
             rankData[metric] = value;
 
             try {
@@ -766,37 +842,40 @@
             }
         };
 
-        const editRank = async (rankId, currentName, currentMetric, currentValue) => {
-            const newName = prompt("Edit rank name:", currentName);
+        const editRank = async (rankId) => {
+            const rankDoc = await db.collection('ranks').doc(rankId).get();
+            if (!rankDoc.exists) {
+                alert('Rank not found.');
+                return;
+            }
+
+            const currentRank = rankDoc.data();
+            const currentMetricKey = Object.keys(currentRank).find(key => key !== 'name');
+            const currentMetricValue = currentRank[currentMetricKey];
+
+            const newName = prompt("Edit rank name:", currentRank.name);
             if (!newName) return;
 
             const metricMap = {
-                'points': 'points',
-                'questions': 'questions',
-                'answers': 'answers',
-                'bestanswers': 'bestAnswers'
+                'points': 'points', 'questions': 'questions',
+                'answers': 'answers', 'bestAnswers': 'bestAnswers'
             };
-            const newMetricText = prompt(`Current metric: "${currentMetric}". Enter new metric (points, questions, answers, bestAnswers):`, currentMetric);
+            const newMetricText = prompt(`Current metric: "${currentMetricKey}". Enter new metric (points, questions, answers, bestAnswers):`, currentMetricKey);
             const newMetric = metricMap[newMetricText.toLowerCase()];
             if (!newMetric) {
                 alert('Invalid metric entered. Please use one of: points, questions, answers, bestAnswers');
                 return;
             }
 
-            const newValue = parseInt(prompt(`Current value: "${currentValue}". Enter new value:`, currentValue), 10);
+            const newValue = parseInt(prompt(`Current value: "${currentMetricValue}". Enter new value:`, currentMetricValue), 10);
             if (isNaN(newValue) || newValue < 0) {
                 alert('Invalid value entered. Please enter a non-negative number.');
                 return;
             }
-
-            const updatedData = {
-                name: newName,
-                points: 0,
-                questions: 0,
-                answers: 0,
-                bestAnswers: 0,
-            };
+            
+            const updatedData = { name: newName };
             updatedData[newMetric] = newValue;
+            updatedData[currentMetricKey] = firebase.firestore.FieldValue.delete();
 
             try {
                 await db.collection('ranks').doc(rankId).update(updatedData);
